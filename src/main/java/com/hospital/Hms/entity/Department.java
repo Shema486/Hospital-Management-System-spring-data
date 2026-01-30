@@ -25,7 +25,7 @@ public class Department {
     @Column
     private Integer locationFloor;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "department",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Doctor> doctors;
 }
 

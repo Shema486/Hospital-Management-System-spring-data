@@ -20,11 +20,11 @@ public class Doctor {
     private String lastName;
     private String specialization;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dept_id")
     private Department department;
 
-    @Column(unique = true)
+    @Column(unique = true,nullable = false)
     private String email;
 
     private String phone;

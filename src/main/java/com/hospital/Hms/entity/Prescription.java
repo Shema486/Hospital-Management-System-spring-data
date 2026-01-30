@@ -27,7 +27,7 @@ public class Prescription {
 
     private String notes;
 
-    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "prescription",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<PrescriptionItem> items;
 }
 
