@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class DepartmentResponse {
-     private Long id;
+     private Long deptId;
      private String deptName;
      private Integer locationFloor;
 }

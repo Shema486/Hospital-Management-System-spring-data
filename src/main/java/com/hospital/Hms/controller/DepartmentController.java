@@ -7,6 +7,7 @@ import com.hospital.Hms.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/department")
+@Tag(name = "Departments", description = "Manage hospital departments")
 public class DepartmentController {
     private final DepartmentService departmentService;
 
@@ -35,6 +37,13 @@ public class DepartmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.create(dept));
     }
 
+    @Operation(
+            summary = "Find all departments",
+            description = "Get all departments that exist"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Department fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "Departments not found")})
     @GetMapping
     public ResponseEntity<List<DepartmentResponse>> findAll(
             @RequestParam int page,
@@ -43,6 +52,7 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.getAll( PageRequest.of(page,size)));
     }
 
+    @Operation(summary = "find a department with doctors", description = "Get  department that and doctors assigned to it ")
     @GetMapping("/{id}/doctors")
     public ResponseEntity<DepartmentWithDoctor> getDepartmentWithDoctors(@PathVariable Long id) {
         return ResponseEntity.ok(departmentService.getDepartmentWithDoctors(id));
@@ -63,5 +73,9 @@ public class DepartmentController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Department deleted successfully with id: " + id);
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<DepartmentResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(departmentService.getById(id));
     }
 }
