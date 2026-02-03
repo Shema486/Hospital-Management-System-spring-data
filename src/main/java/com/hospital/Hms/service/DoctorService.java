@@ -6,10 +6,13 @@ import com.hospital.Hms.entity.Department;
 import com.hospital.Hms.entity.Doctor;
 import com.hospital.Hms.repository.DepartmentRepository;
 import com.hospital.Hms.repository.DoctorRepository;
-import com.shema.Hospital_managment_system_Spring.exception.NotFoundException;
-import jakarta.transaction.Transactional;
+import com.hospital.Hms.exception.NotFoundException;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,8 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final DepartmentRepository departmentRepository;
+    private static final String DOCTOR_BY_ID_CACHE = "doctorById";
+
 
     @Autowired
     public DoctorService(DoctorRepository doctorRepository, DepartmentRepository departmentRepository) {
@@ -30,6 +35,7 @@ public class DoctorService {
 
 
     @Transactional
+    @CachePut(value =DOCTOR_BY_ID_CACHE,key = "#result.doctorId")
     public DoctorResponse save(DoctorRequest request){
         Doctor doctor = mapToEntity(request);
         Doctor saved = doctorRepository.save(doctor);
@@ -38,6 +44,7 @@ public class DoctorService {
     }
 
     @Transactional
+    @CachePut(value =DOCTOR_BY_ID_CACHE,key = "#id")
     public DoctorResponse updateDoctor(Long id, DoctorRequest request) {
 
         Doctor doctor = doctorRepository.findById(id)
@@ -60,8 +67,8 @@ public class DoctorService {
         Doctor updated = doctorRepository.save(doctor);
         return mapToResponse(updated);
     }
-    @Transactional
-    public List<DoctorResponse> findAllDepartment(String search, Pageable pageable){
+    @Transactional(readOnly = true)
+    public List<DoctorResponse> findAllDoctor(String search, Pageable pageable){
         List<Doctor> doctor;
         if (search ==null){
             doctor = doctorRepository.findAll(pageable).getContent();
@@ -74,8 +81,17 @@ public class DoctorService {
                 .collect(Collectors.toList());
 
     }
+    @Cacheable(value = DOCTOR_BY_ID_CACHE, key = "#id")
+    @Transactional(readOnly = true)
+    public DoctorResponse getDoctorById(Long id) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Doctor not found"));
+        return mapToResponse(doctor);
+    }
+
 
     @Transactional
+    @CacheEvict(value = DOCTOR_BY_ID_CACHE, key = "#id")
     public void deactivateDoctor(Long id) {
 
         Doctor doctor = doctorRepository.findById(id)

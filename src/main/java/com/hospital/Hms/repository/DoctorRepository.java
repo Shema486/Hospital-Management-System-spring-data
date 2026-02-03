@@ -19,7 +19,8 @@ public interface DoctorRepository extends JpaRepository<Doctor,Long> {
     Page<Doctor> findAll(Pageable pageable);
 
     @Query("SELECT d FROM Doctor d WHERE d.isActive = true " +
-            "AND (:search IS NULL OR d.firstName ILIKE %:search% " +
+            "AND (:search IS NULL " +
+            "OR d.firstName ILIKE %:search% " +
             "OR d.lastName ILIKE %:search% " +
             "OR d.specialization ILIKE %:search% " +
             "OR CAST(d.doctorId AS string) = :search)")

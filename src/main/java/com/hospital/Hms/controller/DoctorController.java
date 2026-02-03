@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping("/doctors")
 @AllArgsConstructor
 @Tag(name = "Doctors", description = "Manage doctors and their department assignments")
 public class DoctorController {
@@ -24,7 +24,7 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
-    @PutMapping("/doctors/{id}")
+    @PutMapping("/update/{id}")
     public DoctorResponse updateDoctor(
             @PathVariable Long id,
             @RequestBody @Valid DoctorRequest request) {
@@ -34,41 +34,42 @@ public class DoctorController {
 
 
     @Operation(summary = "Delete a doctor", description = "use Id of doctor to delete him/her")
-    @DeleteMapping("/doctors/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteDoctor(@PathVariable Long id) {
         doctorService.deactivateDoctor(id);
         return ResponseEntity.ok("Doctor deactivated successfully");
     }
 
     @Operation(summary = "Find all Doctors", description = "You can find all doctors in all departments")
-    @GetMapping
+    @GetMapping("/findAll")
     public ResponseEntity<List<DoctorResponse>> findAll(
             @Parameter(description = "Page number ", example = "0")
             @RequestParam(required = false) int page,
-            @Parameter(description = "Page size (1–100)", example = "10")
+            @Parameter(description = "Page size ", example = "5")
             @RequestParam(required = false) int size,
-            @Parameter(description = "Sorting by", example = "lastName or doctorID")
+            @Parameter(description = "Sorting by firsName/lastName/specialization/doctorId", example = "doctorId")
             @RequestParam(required = false) String sortBy,
-            @Parameter(description = "Sorting direction", example = "ASC/DESC")
-            @RequestParam(required = false) String SortDir,
-            @Parameter(description = "Search by", example = "firsName/lastName/specialization/doctorId")
+            @Parameter(description = "Sorting direction ASC/DESC", example = "ASC")
+            @RequestParam(required = false) String sortDir,
+            @Parameter(description = "Search by firsName/lastName/specialization/doctorId", example = "")
             @RequestParam(required = false) String search){
 
-        Sort sort = null;
-        if (SortDir.equalsIgnoreCase("ASC")){
-            sort = Sort.by(sortBy).ascending();
-        }else {
-            sort = Sort.by(sortBy).descending();
-        }
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
-        return ResponseEntity.ok(doctorService.findAllDepartment(search,PageRequest.of(page,size,sort)));
+        return ResponseEntity.ok(doctorService.findAllDoctor(search,PageRequest.of(page,size,sort)));
     }
 
     @Operation(summary = "Create a doctor", description = "Registers a doctor and assigns them to a department")
-    @PostMapping
+    @PostMapping("/save")
     public ResponseEntity<DoctorResponse> save(
             @RequestBody @Valid DoctorRequest request){
         return ResponseEntity.ok(doctorService.save(request));
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<DoctorResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(doctorService.getDoctorById(id));
     }
 
 
