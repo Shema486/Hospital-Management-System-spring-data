@@ -1,0 +1,30 @@
+type Appointment{
+    appointmentId:ID!
+    patientName:String!
+    doctorName:String
+    status:AppointmentStatus
+    appointmentDate:String
+}
+enum AppointmentStatus{
+    SCHEDULED, COMPLETE, CANCELLED
+}
+
+input AppointmentRequest{
+    patientId:ID!
+    doctorId:ID!
+    appointmentDate:String
+    reason:String
+}
+input UpdateAppointmentStatusInput {
+    status: String!
+}
+
+extend type Query{
+  getAllAppointment:[Appointment!]
+
+}
+extend type Mutation {
+    addAppointment(input: AppointmentRequest!): Appointment
+    deleteAppointment(id: ID!): String!
+    updateAppointment(id: ID!, input: UpdateAppointmentStatusInput!): Appointment
+}
