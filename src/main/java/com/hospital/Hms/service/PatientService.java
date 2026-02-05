@@ -3,6 +3,7 @@ package com.hospital.Hms.service;
 import com.hospital.Hms.dto.request.PatientRequest;
 import com.hospital.Hms.dto.response.*;
 
+import com.hospital.Hms.entity.Gender;
 import com.hospital.Hms.entity.Patient;
 import com.hospital.Hms.exception.NotFoundException;
 
@@ -131,7 +132,7 @@ public class PatientService {
         patient.setFirstName(request.getFirstName());
         patient.setLastName(request.getLastName());
         patient.setAddress(request.getAddress());
-        patient.setGender(request.getGender());
+        patient.setGender(Gender.valueOf(request.getGender().toString().toUpperCase()));
         patient.setBirthdate(request.getBirthdate());
         patient.setPhone(request.getPhone());
         patient.setUpdatedAt(LocalDateTime.now());
@@ -147,7 +148,7 @@ public class PatientService {
         patient.setFirstName(request.getFirstName());
         patient.setLastName(request.getLastName());
         patient.setBirthdate(request.getBirthdate());
-        patient.setGender(request.getGender());
+        patient.setGender(Gender.valueOf(request.getGender().toString().toUpperCase()));
         patient.setAddress(request.getAddress());
         patient.setPhone(request.getPhone());
         patient.setActive(true);

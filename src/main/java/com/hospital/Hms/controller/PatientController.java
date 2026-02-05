@@ -25,12 +25,11 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Patient Management", description = "APIs for managing patients")
 public class PatientController {
     private final PatientService patientService;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
 
     @Autowired
-    public PatientController(PatientService patientService, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public PatientController(PatientService patientService) {
         this.patientService = patientService;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Operation(

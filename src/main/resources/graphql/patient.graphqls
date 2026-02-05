@@ -1,0 +1,66 @@
+type Patient {
+    patientId: ID!
+    fullName: String!
+    birthdate: String
+    address: String
+    gender: Gender
+    phone: String
+    isActive: Boolean
+    createdAt: String
+}
+
+enum Gender {
+    FEMALE
+    MALE
+}
+
+input PatientRequest {
+    firstName: String!
+    lastName: String!
+    birthdate: String!
+    address: String
+    gender: Gender
+    phone: String
+}
+
+type AppointmentSummary {
+    appointmentId: ID!
+    doctorName: String!
+    appointmentDate: String!
+    status: String!
+}
+
+type PatientWithAppointments {
+    patientId: ID!
+    fullName: String!
+    gender: Gender!
+    phone: String!
+    appointments: [AppointmentSummary!]!
+}
+
+type FeedbackResponse {
+    feedbackId: ID!
+    rating: Int
+    comments: String!
+    feedbackDate: String!
+}
+
+type PatientWithFeedback {
+    patientId: ID!
+    fullName: String!
+    gender: Gender!
+    feedbacks: [FeedbackResponse!]!
+}
+
+type Query {
+    patients(page: Int = 0, size: Int = 10, search: String): [Patient!]
+    patientById(id: ID!): Patient
+    patientWithFeedback(id: ID!): PatientWithFeedback
+    patientWithAppointments(id: ID!): PatientWithAppointments
+}
+
+type Mutation {
+    save(input: PatientRequest!): Patient
+    update(id: ID!, input: PatientRequest!): Patient
+    delete(id: ID!): String
+}
