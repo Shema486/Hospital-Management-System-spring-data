@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,10 +68,12 @@ public class FeedbackController {
     })
     @GetMapping
     public ResponseEntity<Page<FeedbackResponse>> getAllFeedback(
-            @RequestParam(required = false) String name,
-            Pageable pageable) {
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String name
+            ) {
 
-        return ResponseEntity.ok(feedbackServices.findAllFeedback(name, pageable));
+        return ResponseEntity.ok(feedbackServices.findAllFeedback(name, PageRequest.of(page, size)));
     }
 
 
