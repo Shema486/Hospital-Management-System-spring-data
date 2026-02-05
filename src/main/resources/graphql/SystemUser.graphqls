@@ -1,0 +1,42 @@
+type SystemUser {
+    userId: ID
+    username: String
+    fullName: String
+    role: Role
+    createdAt: String
+    isActive: Boolean
+}
+enum Role{
+    ADMIN, DOCTOR, NURSE, RECEPTIONIST
+}
+input CreateUserInput {
+    username: String!
+    fullName: String!
+    password: String!
+    role: Role!
+}
+
+input LoginInput {
+    username: String!
+    password: String!
+}
+
+type LoginResponse {
+    userId: ID
+    username: String
+    fullName: String
+    role: Role
+    createdAt: String
+}
+
+extend type Query {
+    getAllUsers(page: Int = 0, size: Int = 10, search: String): [SystemUser!]
+    userById(id: ID!): SystemUser
+}
+
+extend type Mutation {
+    saveUser(input: CreateUserInput!): SystemUser
+    login(input: LoginInput!): LoginResponse
+    deactivateUser(id: ID!): Boolean!
+    updateUser(id: ID!, input: CreateUserInput!): SystemUser
+}

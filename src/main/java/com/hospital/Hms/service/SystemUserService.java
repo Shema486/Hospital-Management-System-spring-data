@@ -5,6 +5,7 @@ import com.hospital.Hms.dto.request.SystemUserRequest;
 import com.hospital.Hms.dto.response.LoginUserResponse;
 import com.hospital.Hms.dto.response.SystemUserResponse;
 
+import com.hospital.Hms.entity.Role;
 import com.hospital.Hms.entity.SystemUser;
 import com.hospital.Hms.exception.BadRequestException;
 import com.hospital.Hms.exception.NotFoundException;
@@ -79,7 +80,7 @@ public class SystemUserService {
             user.setPassword(passwordUtil.hashPassword(request.getPassword()));
         }
 
-        user.setRole(request.getRole());
+        user.setRole(Role.valueOf(request.getRole().toString().toUpperCase()));
 
         SystemUser saved = uSerRepository.save(user);
 
