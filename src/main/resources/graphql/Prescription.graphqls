@@ -1,0 +1,40 @@
+
+
+type Prescription {
+    prescriptionId: ID!
+    appointmentId: ID!
+    dateIssued: String
+    notes: String!
+}
+
+type PrescriptionByAppointment {
+    prescriptionId: ID!
+    appointmentId: ID!
+    dateIssued: String
+    notes: String!
+    Items: [PrescriptionItemResponse!]!
+}
+
+type PrescriptionItemResponse {
+    prescriptionId: ID!
+    itemId: ID!
+    itemName: String
+    quantityDispensed: Int
+    dosageInstruction: String
+}
+
+input PrescriptionRequest {
+    appointmentId: ID!
+    notes: String!
+}
+
+extend type Query {
+    prescriptionByAppointment(id: ID!): PrescriptionByAppointment
+    prescriptionById(id: ID!): Prescription
+    getAllPrescriptions: [Prescription!]!
+}
+
+extend type Mutation {
+    addPrescription(input: PrescriptionRequest): Prescription
+    deletePrescription(id: ID!): String
+}

@@ -2,6 +2,7 @@ package com.hospital.Hms.service;
 
 import com.hospital.Hms.dto.request.PrescriptionRequestDTO;
 import com.hospital.Hms.dto.response.PrescriptionResponseDTO;
+import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
 import com.hospital.Hms.entity.Appointment;
 import com.hospital.Hms.entity.Prescription;
 import com.hospital.Hms.exception.NotFoundException;
@@ -38,21 +39,21 @@ public class PrescriptionService {
     public PrescriptionResponseDTO getPrescriptionById(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prescription not found"));
-        return PrescriptionMapper.toResponse(prescription);
+        return PrescriptionMapper.mapToPrescriptionResponse(prescription);
     }
 
    @Transactional(readOnly = true)
     @Cacheable(value =  PRESCRIPTION_BY_APPOINTMENT,key = "#appointmentId")
-    public PrescriptionResponseDTO getPrescriptionByAppointment(Long appointmentId) {
+    public PrescriptionWithAppointment getPrescriptionByAppointment(Long appointmentId) {
         Prescription prescription =prescriptionRepository.findByAppointment_AppointmentId(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Prescription not found for appointment"));
+                .orElseThrow(() -> new NotFoundException("Prescription not found for appointment"));
         return PrescriptionMapper.toResponse(prescription);
     }
 
     @Transactional(readOnly = true)
     public List<PrescriptionResponseDTO> getAllPrescriptions() {
         return prescriptionRepository.findAll().stream()
-                .map(PrescriptionMapper::toResponse)
+                .map(PrescriptionMapper::mapToPrescriptionResponse)
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +63,7 @@ public class PrescriptionService {
     public PrescriptionResponseDTO createPrescription(PrescriptionRequestDTO dto) {
 
         Appointment appointment = appointmentRepository.findById(dto.getAppointmentId())
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new NotFoundException("Appointment not found"));
 
         Prescription prescription = new Prescription();
         prescription.setAppointment(appointment);
@@ -71,12 +72,13 @@ public class PrescriptionService {
 
         Prescription saved = prescriptionRepository.save(prescription);
 
-        return PrescriptionMapper.toResponse(saved);
+        return PrescriptionMapper.mapToPrescriptionResponse(saved);
     }
     @Transactional
     @CacheEvict(value = {PRESCRIPTION_BY_ID, PRESCRIPTION_BY_APPOINTMENT, ALL_PRESCRIPTIONS}, allEntries = true)
     public void deletePrescription(Long id) {
         prescriptionRepository.deleteById(id);
     }
+
 
 }

@@ -2,6 +2,7 @@ package com.hospital.Hms.controller;
 
 import com.hospital.Hms.dto.request.PrescriptionRequestDTO;
 import com.hospital.Hms.dto.response.PrescriptionResponseDTO;
+import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
 import com.hospital.Hms.service.PrescriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -98,7 +98,7 @@ public class PrescriptionController {
             @ApiResponse(responseCode = "404", description = "Prescription not found for appointment", content = @Content)
     })
     @GetMapping("/appointment/{appointmentId}")
-    public ResponseEntity<PrescriptionResponseDTO> getByAppointment(
+    public ResponseEntity<PrescriptionWithAppointment> getByAppointment(
             @PathVariable Long appointmentId) {
 
         return ResponseEntity.ok(
