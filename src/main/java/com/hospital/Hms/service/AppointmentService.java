@@ -41,15 +41,6 @@ public class AppointmentService {
     @Transactional
     @CachePut(value = APPOINTMENT_NAME_CACHE,key = "#result.appointmentId")
     public AppointmentResponse addAppointment(AppointmentRequest request) {
-        if (request.getDoctorId() == null) {
-            throw new BadRequestException("Doctor is required");
-        }
-        if (request.getPatientId() == null) {
-            throw new BadRequestException("Patient is required");
-        }
-        if (request.getAppointmentDate() == null) {
-            throw new BadRequestException("Appointment date is required");
-        }
 
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
@@ -57,16 +48,17 @@ public class AppointmentService {
         Patient patient = patientRepository.findById(request.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
 
-        Appointment appointment = new Appointment();
-        appointment.setAppointmentDate(request.getAppointmentDate());
-        appointment.setReason(request.getReason());
-        appointment.setStatus(AppointmentStatus.SCHEDULED);
-        appointment.setDoctor(doctor);
-        appointment.setPatient(patient);
+        if (appointmentRepository.existsByDoctorAndAppointmentDate(
+                doctor, request.getAppointmentDate())) {
+            throw new BadRequestException("Doctor is already booked at this time");
+        }
 
-        return Mapper.mapToResponseAppointment(appointmentRepository.save(appointment));
+        Appointment appointment = Mapper.mapToAppointment(request, doctor, patient);
+        Appointment saved = appointmentRepository.save(appointment);
+        return Mapper.mapToResponseAppointment(saved);
     }
-    
+
+
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
         return appointmentRepository.findAll()
