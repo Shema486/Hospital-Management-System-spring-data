@@ -24,6 +24,7 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
+
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
     @PatchMapping("update/{id}")
     public DoctorResponse updateDoctor(
@@ -34,12 +35,14 @@ public class DoctorController {
     }
 
 
+
     @Operation(summary = "Delete a doctor", description = "use Id of doctor to delete him/her")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteDoctor(@PathVariable Long id) {
         doctorService.deactivateDoctor(id);
         return ResponseEntity.ok("Doctor deactivated successfully");
     }
+
 
     @Operation(summary = "Find all Doctors", description = "You can find all doctors in all departments")
     @GetMapping("/findAll")
@@ -62,12 +65,15 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.findAllDoctor(search,PageRequest.of(page,size,sort)));
     }
 
+
     @Operation(summary = "Create a doctor", description = "Registers a doctor and assigns them to a department")
     @PostMapping("/save")
     public ResponseEntity<DoctorResponse> save(
             @RequestBody @Valid DoctorRequest request){
         return ResponseEntity.ok(doctorService.save(request));
     }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<DoctorResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(doctorService.getDoctorById(id));

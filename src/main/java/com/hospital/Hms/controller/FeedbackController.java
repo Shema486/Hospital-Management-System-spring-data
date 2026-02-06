@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/feedback")
-@Tag(
-        name = "Patient Feedback",
-        description = "APIs for managing patient feedback and ratings"
-)
+@Tag(name = "Patient Feedback", description = "APIs for managing patient feedback and ratings")
 public class FeedbackController {
 
     private final FeedbackServices feedbackServices;
@@ -32,41 +29,22 @@ public class FeedbackController {
 
 
 
-    @Operation(
-            summary = "Submit patient feedback",
-            description = "Allows a patient to submit feedback and rating"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Feedback successfully submitted"
-
-            ),
-            @ApiResponse(responseCode = "400", description = "Invalid feedback data"),
-            @ApiResponse(responseCode = "404", description = "Patient not found")
-    })
     @PostMapping
+    @Operation(summary = "Submit patient feedback", description = "Allows a patient to submit feedback and rating")
+    @ApiResponse(responseCode = "201", description = "Feedback successfully submitted")
+    @ApiResponse(responseCode = "400", description = "Invalid feedback data")
+    @ApiResponse(responseCode = "404", description = "Patient not found")
     public ResponseEntity<FeedbackResponse> saveFeedback(
             @RequestBody FeedbackRequest request) {
-
         FeedbackResponse response = feedbackServices.save(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
 
 
-    @Operation(
-            summary = "Get all feedback",
-            description = "Retrieves paginated patient feedback, optionally filtered by patient name"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Feedback retrieved successfully"
-
-            )
-    })
     @GetMapping
+    @Operation(summary = "Get all feedback", description = "Retrieves paginated patient feedback, optionally filtered by patient name")
+    @ApiResponse(responseCode = "200", description = "Feedback retrieved successfully")
     public ResponseEntity<Page<FeedbackResponse>> getAllFeedback(
             @RequestParam int page,
             @RequestParam int size,
@@ -78,18 +56,12 @@ public class FeedbackController {
 
 
 
-    @Operation(
-            summary = "Delete feedback",
-            description = "Deletes patient feedback by its ID"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Feedback deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Feedback not found", content = @Content)
-    })
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Delete feedback", description = "Deletes patient feedback by its ID")
+    @ApiResponse(responseCode = "204", description = "Feedback deleted successfully")
+    @ApiResponse(responseCode = "400", description = "Feedback not found", content = @Content)
     public ResponseEntity<Void> deleteFeedback(
             @PathVariable Long id) {
-
         feedbackServices.delete(id);
         return ResponseEntity.noContent().build();
     }

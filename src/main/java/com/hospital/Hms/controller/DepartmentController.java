@@ -29,22 +29,19 @@ public class DepartmentController {
         this.departmentService = departmentService;
     }
 
-    @Operation(summary = "Create a department", description = "Create new  department ")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Department added successfully"),})
+
     @PostMapping
+    @Operation(summary = "Create a department", description = "Create new  department ")
+    @ApiResponse(responseCode = "200", description = "Department added successfully")
     public ResponseEntity<DepartmentResponse> create(@RequestBody DepartmentRequest dept){
         return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.create(dept));
     }
 
-    @Operation(
-            summary = "Find all departments",
-            description = "Get all departments that exist"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Department fetched successfully"),
-            @ApiResponse(responseCode = "404", description = "Departments not found")})
+
     @GetMapping
+    @Operation(summary = "Find all departments", description = "Get all departments that exist")
+    @ApiResponse(responseCode = "200", description = "Department fetched successfully")
+    @ApiResponse(responseCode = "404", description = "Departments not found")
     public ResponseEntity<List<DepartmentResponse>> findAll(
             @RequestParam int page,
             @RequestParam int size
@@ -52,28 +49,26 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.getAll( PageRequest.of(page,size)));
     }
 
-    @Operation(summary = "find a department with doctors", description = "Get  department that and doctors assigned to it ")
     @GetMapping("/{id}/doctors")
+    @Operation(summary = "find a department with doctors", description = "Get  department that and doctors assigned to it ")
     public ResponseEntity<DepartmentWithDoctor> getDepartmentWithDoctors(@PathVariable Long id) {
         return ResponseEntity.ok(departmentService.getDepartmentWithDoctors(id));
     }
 
-    @Operation(
-            summary = "Delete a department",
-            description = "Deletes a department only if it does not contain any doctors"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Department deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Department has assigned doctors"),
-            @ApiResponse(responseCode = "404", description = "Department not found")
-    })
+
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a department", description = "Deletes a department only if it does not contain any doctors")
+    @ApiResponse(responseCode = "200", description = "Department deleted successfully")
+    @ApiResponse(responseCode = "400", description = "Department has assigned doctors")
+    @ApiResponse(responseCode = "404", description = "Department not found")
     public ResponseEntity<Map<String,String>> delete(@PathVariable Long id){
         departmentService.delete(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Department deleted successfully with id: " + id);
         return ResponseEntity.ok(response);
     }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<DepartmentResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(departmentService.getById(id));
