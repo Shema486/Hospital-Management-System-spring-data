@@ -5,6 +5,7 @@ import com.hospital.Hms.dto.request.SystemUserRequest;
 import com.hospital.Hms.dto.response.LoginUserResponse;
 import com.hospital.Hms.dto.response.SystemUserResponse;
 
+import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.entity.Role;
 import com.hospital.Hms.entity.SystemUser;
 import com.hospital.Hms.exception.BadRequestException;
@@ -40,8 +41,9 @@ public class SystemUserService {
     @Transactional
     @CachePut(value = SYSTEM_USER, key = "#result.userId")
     public SystemUserResponse save(SystemUserRequest request){
-        if(request ==null){
-            throw new NotFoundException("User is required");
+
+        if(uSerRepository.existsByUsername(request.getUsername())){
+            throw new IllegalArgumentException("Username already exists: "+request.getUsername());
         }
         SystemUser user = Mapper.mapToEntityUser(request);
         SystemUser saved  = uSerRepository.save(user);
@@ -70,23 +72,16 @@ public class SystemUserService {
     }
     @Transactional
     @CachePut(value = SYSTEM_USER, key = "#result.userId")
-    public SystemUserResponse updateUser(Long id, SystemUserRequest request) {
+    public SystemUserResponse updateUser(Long id, SystemUserUpdateRequest request) {
         SystemUser user = uSerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + id));
 
-        user.setUsername(request.getUsername());
-        user.setFullName(request.getFullName());
-
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(passwordUtil.hashPassword(request.getPassword()));
-        }
-
-        user.setRole(Role.valueOf(request.getRole().toString().toUpperCase()));
+        Mapper.updateUserFromRequest(user, request, uSerRepository, passwordUtil);
 
         SystemUser saved = uSerRepository.save(user);
-
         return Mapper.mapToResponseUser(saved);
     }
+
 
 
     @Transactional(readOnly = true)

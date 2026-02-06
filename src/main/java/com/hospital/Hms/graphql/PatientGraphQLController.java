@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.PatientRequest;
 import com.hospital.Hms.dto.response.PatientResponse;
 import com.hospital.Hms.dto.response.PatientWithAppointment;
 import com.hospital.Hms.dto.response.PatientWithFeedback;
+import com.hospital.Hms.dto.update.PatientUpdateRequest;
 import com.hospital.Hms.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -56,7 +57,7 @@ public class PatientGraphQLController {
 
     @MutationMapping
     public PatientResponse update(@Argument Long id,
-                                  @Argument("input") PatientRequest input) {
+                                  @Argument("input") PatientUpdateRequest input) {
         return patientService.update(id, input);
     }
 

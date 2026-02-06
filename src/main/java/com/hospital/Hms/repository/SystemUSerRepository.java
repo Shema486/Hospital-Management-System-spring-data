@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface SystemUSerRepository extends JpaRepository<SystemUser,Long> {
     Optional<SystemUser> findById(Long id);
     Optional<SystemUser> findByUsername(String username);
+    boolean existsByUsername (String name);
 
     @Query("SELECT u FROM SystemUser u WHERE u.isActive =true ")
     Page<SystemUser> findAll(Pageable pageable);

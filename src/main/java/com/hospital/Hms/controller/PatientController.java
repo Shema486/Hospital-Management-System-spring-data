@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.PatientRequest;
 import com.hospital.Hms.dto.response.PatientResponse;
 import com.hospital.Hms.dto.response.PatientWithAppointment;
 import com.hospital.Hms.dto.response.PatientWithFeedback;
+import com.hospital.Hms.dto.update.PatientUpdateRequest;
 import com.hospital.Hms.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -66,8 +67,8 @@ public class PatientController {
                     @ApiResponse(responseCode = "404", description = "No patient found")
             }
     )
-    @PutMapping("/update/{id}")
-    public ResponseEntity<PatientResponse> update(@PathVariable Long id,@RequestBody @Valid PatientRequest request){
+    @PatchMapping("update/{id}")
+    public ResponseEntity<PatientResponse> update(@PathVariable Long id, @RequestBody @Valid PatientUpdateRequest request){
      return    ResponseEntity.ok(patientService.update(id,request));
     }
 

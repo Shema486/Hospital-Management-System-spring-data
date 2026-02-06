@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.LoginUserRequest;
 import com.hospital.Hms.dto.request.SystemUserRequest;
 import com.hospital.Hms.dto.response.LoginUserResponse;
 import com.hospital.Hms.dto.response.SystemUserResponse;
+import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.service.SystemUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,7 +50,7 @@ public class SystemUserGraphQLController {
     @MutationMapping
     public SystemUserResponse updateUser(
             @Argument Long id,
-            @Argument("input") SystemUserRequest input
+            @Argument("input") SystemUserUpdateRequest input
     ) {
         return systemUserService.updateUser(id, input);
     }

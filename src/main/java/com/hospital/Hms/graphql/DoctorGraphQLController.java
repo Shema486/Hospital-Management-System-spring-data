@@ -2,6 +2,7 @@ package com.hospital.Hms.graphql;
 
 import com.hospital.Hms.dto.request.DoctorRequest;
 import com.hospital.Hms.dto.response.DoctorResponse;
+import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.service.DoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,7 @@ public class DoctorGraphQLController {
     }
     @MutationMapping
     public DoctorResponse updateDoctor(@Argument Long id,
-                                       @Argument("input") DoctorRequest input) {
+                                       @Argument("input") DoctorUpdateRequest input) {
         return doctorService.updateDoctor(id, input);
     }
     @MutationMapping

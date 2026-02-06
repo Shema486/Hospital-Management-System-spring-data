@@ -2,6 +2,7 @@ package com.hospital.Hms.controller;
 
 import com.hospital.Hms.dto.request.DoctorRequest;
 import com.hospital.Hms.dto.response.DoctorResponse;
+import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.service.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,10 +25,10 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
-    @PutMapping("/update/{id}")
+    @PatchMapping("update/{id}")
     public DoctorResponse updateDoctor(
             @PathVariable Long id,
-            @RequestBody @Valid DoctorRequest request) {
+            @RequestBody @Valid DoctorUpdateRequest request) {
 
         return doctorService.updateDoctor(id, request);
     }

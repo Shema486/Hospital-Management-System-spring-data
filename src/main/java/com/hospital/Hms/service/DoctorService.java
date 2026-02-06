@@ -2,6 +2,7 @@ package com.hospital.Hms.service;
 
 import com.hospital.Hms.dto.request.DoctorRequest;
 import com.hospital.Hms.dto.response.DoctorResponse;
+import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.entity.Department;
 import com.hospital.Hms.entity.Doctor;
 import com.hospital.Hms.mapper.Mapper;
@@ -46,21 +47,10 @@ public class DoctorService {
 
     @Transactional
     @CachePut(value =DOCTOR_BY_ID_CACHE,key = "#id")
-    public DoctorResponse updateDoctor(Long id, DoctorRequest request) {
+    public DoctorResponse updateDoctor(Long id, DoctorUpdateRequest request) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + id));
-        doctor.setFirstName(request.getFirstName());
-        doctor.setLastName(request.getLastName());
-        doctor.setEmail(request.getEmail());
-        doctor.setPhone(request.getPhone());
-        doctor.setSpecialization(request.getSpecialization());
-        if (request.getDeptId() != null) {
-            Department department = departmentRepository.findById(request.getDeptId())
-                    .orElseThrow(() -> new RuntimeException("Department not found"));
-            doctor.setDepartment(department);
-        } else {
-            doctor.setDepartment(null);
-        }
+        Mapper.updateDoctorFromRequest(doctor, request, departmentRepository);
         Doctor updated = doctorRepository.save(doctor);
         return Mapper.mapToResponseDoctor(updated);
     }

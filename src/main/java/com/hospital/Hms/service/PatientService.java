@@ -3,6 +3,7 @@ package com.hospital.Hms.service;
 import com.hospital.Hms.dto.request.PatientRequest;
 import com.hospital.Hms.dto.response.*;
 
+import com.hospital.Hms.dto.update.PatientUpdateRequest;
 import com.hospital.Hms.entity.Gender;
 import com.hospital.Hms.entity.Patient;
 import com.hospital.Hms.exception.NotFoundException;
@@ -130,18 +131,10 @@ public class PatientService {
     @Transactional
     @CachePut(value = PATIENT_NAME_CACHE,key = "#result.patientId")
     @CacheEvict(value = {PATIENT_FEEDBACK_CACHE, PATIENT_APPOINTMENT_CACHE}, key = "#patientId")
-    public PatientResponse update(Long patientId,PatientRequest request){
+    public PatientResponse update(Long patientId, PatientUpdateRequest request){
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(()->new NotFoundException("patient not found"));
-
-
-        patient.setFirstName(request.getFirstName());
-        patient.setLastName(request.getLastName());
-        patient.setAddress(request.getAddress());
-        patient.setGender(Gender.valueOf(request.getGender().toString().toUpperCase()));
-        patient.setBirthdate(request.getBirthdate());
-        patient.setPhone(request.getPhone());
-        patient.setUpdatedAt(LocalDateTime.now());
+        Mapper.updatePatientFromRequest(patient, request);
 
         Patient updated = patientRepository.save(patient);
         return Mapper.mapToResponsePatient(updated);

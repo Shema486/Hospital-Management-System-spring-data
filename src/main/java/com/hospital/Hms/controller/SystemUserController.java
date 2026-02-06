@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.LoginUserRequest;
 import com.hospital.Hms.dto.request.SystemUserRequest;
 import com.hospital.Hms.dto.response.LoginUserResponse;
 import com.hospital.Hms.dto.response.SystemUserResponse;
+import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.service.SystemUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -81,10 +82,10 @@ public class SystemUserController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "404", description = "User not found with given ID")
     })
-    @PutMapping("/{id}")
+    @PatchMapping("update/{id}")
     public ResponseEntity<SystemUserResponse> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody SystemUserRequest request) {
+            @Valid @RequestBody SystemUserUpdateRequest request) {
         return ResponseEntity.ok(systemUserService.updateUser(id, request));
     }
 
