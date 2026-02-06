@@ -1,4 +1,4 @@
-package com.shema.Hospital_managment_system_Spring.config;
+package com.hospital.Hms.Config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
