@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.DepartmentRequest;
 import com.hospital.Hms.dto.response.DepartmentResponse;
 import com.hospital.Hms.dto.response.DepartmentWithDoctor;
 import com.hospital.Hms.entity.Department;
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.DepartmentRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class DepartmentService  {
         Department department = new Department();
         department.setDeptName(dept.getDeptName());
         department.setLocationFloor(dept.getLocationFloor());
-        return mapToResponse(departmentRepository.save(department));
+        return Mapper.mapToResponseDepartment(departmentRepository.save(department));
     }
     @Transactional(readOnly = true)
     @Cacheable(value = DEPARTMENT_WITH_DOCTOR_CACHE,key = "#deptId")
@@ -63,7 +64,7 @@ public class DepartmentService  {
     public List<DepartmentResponse> getAll(Pageable pageable){
         List<Department> departmentList = departmentRepository.findAll(pageable).getContent();
         return  departmentList.stream()
-                .map(this::mapToResponse)
+                .map(Mapper::mapToResponseDepartment)
                 .collect(Collectors.toList());
 
     }
@@ -74,21 +75,13 @@ public class DepartmentService  {
         departmentRepository.delete(department);
     }
 
+
     @Transactional(readOnly = true)
     @Cacheable(value = DEPARTMENT_BY_ID_CACHE,key = "#id")
     public DepartmentResponse getById(Long id) {
         Department department = departmentRepository.findById(id).orElseThrow(()->new RuntimeException("not found"));
-        return mapToResponse(department);
+        return Mapper.mapToResponseDepartment(department);
 
     }
-
-    private DepartmentResponse mapToResponse(Department department){
-        return new DepartmentResponse(
-                department.getDeptId(),
-                department.getDeptName(),
-                department.getLocationFloor()
-        );
-    }
-
 
 }

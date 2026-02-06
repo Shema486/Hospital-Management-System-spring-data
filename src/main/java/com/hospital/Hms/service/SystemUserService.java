@@ -9,6 +9,7 @@ import com.hospital.Hms.entity.Role;
 import com.hospital.Hms.entity.SystemUser;
 import com.hospital.Hms.exception.BadRequestException;
 import com.hospital.Hms.exception.NotFoundException;
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.SystemUSerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+
 
 @Service
 public class SystemUserService {
@@ -42,9 +43,9 @@ public class SystemUserService {
         if(request ==null){
             throw new NotFoundException("User is required");
         }
-        SystemUser user = mapToEntity(request);
+        SystemUser user = Mapper.mapToEntityUser(request);
         SystemUser saved  = uSerRepository.save(user);
-        return mapToResponse(saved);
+        return Mapper.mapToResponseUser(saved);
     }
 
     public LoginUserResponse login(LoginUserRequest request){
@@ -84,7 +85,7 @@ public class SystemUserService {
 
         SystemUser saved = uSerRepository.save(user);
 
-        return mapToResponse(saved);
+        return Mapper.mapToResponseUser(saved);
     }
 
 
@@ -96,7 +97,7 @@ public class SystemUserService {
         }else {
             page = uSerRepository.findAllByUsername(search,pageable);
         }
-        return page.map(this::mapToResponse);
+        return page.map(Mapper::mapToResponseUser);
 
     }
 
@@ -105,7 +106,7 @@ public class SystemUserService {
     public SystemUserResponse findByUserId(Long userId) {
         SystemUser user = uSerRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-        return mapToResponse(user);
+        return Mapper.mapToResponseUser(user);
     }
 
 
@@ -119,24 +120,5 @@ public class SystemUserService {
     }
 
 
-    public SystemUser mapToEntity (SystemUserRequest request){
-        SystemUser user = new SystemUser();
-        user.setFullName(request.getFullName());
-        user.setUsername(request.getUsername());
-        user.setPassword(PasswordUtil.hashPassword(request.getPassword()));
-        user.setRole(request.getRole());
-        user.setIsActive(true);
-        user.setCreatedAt(LocalDateTime.now());
-        return user;
-    }
-    public SystemUserResponse mapToResponse(SystemUser systemUser){
-        return new SystemUserResponse(
-                systemUser.getUserId(),
-                systemUser.getUsername(),
-                systemUser.getFullName(),
-                systemUser.getRole(),
-                systemUser.getIsActive(),
-                systemUser.getCreatedAt()
-        );
-    }
+
 }

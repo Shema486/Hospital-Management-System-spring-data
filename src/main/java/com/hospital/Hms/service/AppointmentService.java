@@ -8,6 +8,7 @@ import com.hospital.Hms.entity.Doctor;
 import com.hospital.Hms.entity.Patient;
 import com.hospital.Hms.exception.BadRequestException;
 import com.hospital.Hms.exception.NotFoundException;
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.AppointmentRepository;
 import com.hospital.Hms.repository.DoctorRepository;
 import com.hospital.Hms.repository.PatientRepository;
@@ -63,15 +64,18 @@ public class AppointmentService {
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
 
-        return mapToResponse(appointmentRepository.save(appointment));
+        return Mapper.mapToResponseAppointment(appointmentRepository.save(appointment));
     }
+    
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
         return appointmentRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(Mapper::mapToResponseAppointment)
                 .collect(Collectors.toList());
     }
+
+
     @Transactional
     @CachePut(value = APPOINTMENT_NAME_CACHE,key = "#result.appointmentId")
     public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatus status) {
@@ -83,8 +87,9 @@ public class AppointmentService {
                         new NotFoundException("Appointment not found with ID: " + appointmentId)
                 );
         appointment.setStatus(status);
-        return mapToResponse(appointment);
+        return Mapper.mapToResponseAppointment(appointment);
     }
+
 
     @Transactional
     @CacheEvict(value = APPOINTMENT_NAME_CACHE,key="#appointmentId")
@@ -98,25 +103,4 @@ public class AppointmentService {
     }
 
 
-
-    private AppointmentResponse mapToResponse(Appointment appointment) {
-
-        String patientName = appointment.getPatient() != null
-                ? appointment.getPatient().getFirstName() + " " +
-                appointment.getPatient().getLastName()
-                : null;
-
-        String doctorName = appointment.getDoctor() != null
-                ? appointment.getDoctor().getFirstName() + " " +
-                appointment.getDoctor().getLastName()
-                : null;
-
-        return new AppointmentResponse(
-                appointment.getAppointmentId(),
-                patientName,
-                doctorName,
-                appointment.getStatus(),
-                appointment.getAppointmentDate()
-        );
-    }
 }

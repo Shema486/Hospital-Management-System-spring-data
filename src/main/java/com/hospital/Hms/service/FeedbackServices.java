@@ -6,6 +6,7 @@ import com.hospital.Hms.dto.response.FeedbackResponse;
 import com.hospital.Hms.entity.Patient;
 import com.hospital.Hms.entity.PatientFeedback;
 import com.hospital.Hms.exception.NotFoundException;
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.FeedbackRepository;
 import com.hospital.Hms.repository.PatientRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,48 +33,35 @@ public class FeedbackServices {
 
     @Transactional
     public FeedbackResponse save(FeedbackRequest request) {
-
         Patient patient = patientRepository.findById(request.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
-
         PatientFeedback feedback = new PatientFeedback();
         feedback.setRating(request.getRating());
         feedback.setComments(request.getComments());
         feedback.setFeedbackDate(LocalDate.now());
         feedback.setPatient(patient);
-
-        return mapToResponse(feedbackRepository.save(feedback));
+        return Mapper.mapToResponseFeedback(feedbackRepository.save(feedback));
     }
 
     @Transactional(readOnly = true)
     public Page<FeedbackResponse> findAllFeedback(String keyword, Pageable pageable) {
-
         Page<PatientFeedback> page;
-
         if (keyword == null || keyword.isBlank()) {
-            page = feedbackRepository.findAll(pageable);
+            page = feedbackRepository
+                    .findAll(pageable);
         } else {
             page = feedbackRepository
                     .findByPatient_FirstNameContainingIgnoreCase(keyword, pageable);
         }
-
-        return page.map(this::mapToResponse);
+        return page.map(Mapper::mapToResponseFeedback);
     }
+
+
     @Transactional
     public void delete(Long id) {
-
         PatientFeedback feedback = feedbackRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Feedback not found"));
-
         feedbackRepository.delete(feedback);
     }
 
-    private FeedbackResponse mapToResponse(PatientFeedback feedback) {
-        return new FeedbackResponse(
-                feedback.getFeedbackId(),
-                feedback.getRating(),
-                feedback.getComments(),
-                feedback.getFeedbackDate()
-        );
-    }
 }

@@ -7,6 +7,7 @@ import com.hospital.Hms.entity.Gender;
 import com.hospital.Hms.entity.Patient;
 import com.hospital.Hms.exception.NotFoundException;
 
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.PatientRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +43,9 @@ public class PatientService {
     @CachePut(value = PATIENT_NAME_CACHE,key = "#result.patientId")
     public PatientResponse save(PatientRequest patient){
 
-        Patient patient1 = mapToEntity(patient);
+        Patient patient1 = Mapper.mapToEntityPatient(patient);
         Patient saved = patientRepository.save(patient1);
-       return mapToResponse(saved);
+       return Mapper.mapToResponsePatient(saved);
     }
 
     @Transactional
@@ -67,7 +68,7 @@ public class PatientService {
             page = patientRepository.findByNameContainingIgnoreCase(name, pageable);
         }
 
-        return page.map(this::mapToResponse);
+        return page.map(Mapper::mapToResponsePatient);
     }
 
     @Transactional(readOnly = true)
@@ -78,7 +79,8 @@ public class PatientService {
 
         List<FeedbackResponse> feedback = patient.getFeedbacks()
                 .stream()
-                .map(feedback1 ->new FeedbackResponse(
+                .map(feedback1 ->
+                        new FeedbackResponse(
                         feedback1.getFeedbackId(),
                         feedback1.getRating(),
                         feedback1.getComments(),
@@ -95,16 +97,20 @@ public class PatientService {
     @Transactional(readOnly = true)
     @Cacheable(value = PATIENT_APPOINTMENT_CACHE,key = "#patientId")
     public PatientWithAppointment getPatientWithAppointment(Long patientId){
+
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(()->new NotFoundException("Patient with this Id not found"));
+
         List<AppointmentSummaryDTO> appointment = patient.getAppointments()
                 .stream()
-                .map(a->new AppointmentSummaryDTO(
+                .map(
+                        a->new AppointmentSummaryDTO(
                         a.getAppointmentId(),
                         a.getDoctor().getFirstName() + " " + a.getDoctor().getLastName(),
                         a.getAppointmentDate(),
                         a.getStatus()
                 )).collect(Collectors.toList());
+
         return new PatientWithAppointment(
                 patient.getPatientId(),
                 patient.getFirstName() + " " +patient.getLastName(),
@@ -118,7 +124,7 @@ public class PatientService {
     public PatientResponse getById(Long id) {
         Patient patient = patientRepository.findById(id)
                 .orElseThrow(()->new NotFoundException("patient not found"));
-        return mapToResponse(patient);
+        return Mapper.mapToResponsePatient(patient);
     }
 
     @Transactional
@@ -138,40 +144,9 @@ public class PatientService {
         patient.setUpdatedAt(LocalDateTime.now());
 
         Patient updated = patientRepository.save(patient);
-        return mapToResponse(updated);
+        return Mapper.mapToResponsePatient(updated);
 
     }
-
-    public Patient mapToEntity(PatientRequest request){
-
-        Patient patient = new Patient();
-        patient.setFirstName(request.getFirstName());
-        patient.setLastName(request.getLastName());
-        patient.setBirthdate(request.getBirthdate());
-        patient.setGender(Gender.valueOf(request.getGender().toString().toUpperCase()));
-        patient.setAddress(request.getAddress());
-        patient.setPhone(request.getPhone());
-        patient.setActive(true);
-        patient.setCreatedAt(LocalDateTime.now());
-        patient.setUpdatedAt(LocalDateTime.now());
-        return patient;
-    }
-    public PatientResponse mapToResponse(Patient patient) {
-        return new PatientResponse(
-                patient.getPatientId(),
-                patient.getFirstName() + " " + patient.getLastName(),
-                patient.getBirthdate(),
-                patient.getAddress(),
-                patient.getGender(),
-                patient.getPhone(),
-                patient.isActive(),
-                patient.getCreatedAt()
-        );
-
-    }
-
-
-
 }
 
 

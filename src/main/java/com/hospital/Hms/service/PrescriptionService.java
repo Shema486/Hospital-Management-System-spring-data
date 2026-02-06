@@ -6,6 +6,8 @@ import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
 import com.hospital.Hms.entity.Appointment;
 import com.hospital.Hms.entity.Prescription;
 import com.hospital.Hms.exception.NotFoundException;
+import com.hospital.Hms.mapper.Mapper;
+
 import com.hospital.Hms.repository.AppointmentRepository;
 import com.hospital.Hms.repository.PrescriptionRepository;
 
@@ -39,7 +41,7 @@ public class PrescriptionService {
     public PrescriptionResponseDTO getPrescriptionById(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prescription not found"));
-        return PrescriptionMapper.mapToPrescriptionResponse(prescription);
+        return Mapper.mapToPrescriptionResponse(prescription);
     }
 
    @Transactional(readOnly = true)
@@ -47,13 +49,13 @@ public class PrescriptionService {
     public PrescriptionWithAppointment getPrescriptionByAppointment(Long appointmentId) {
         Prescription prescription =prescriptionRepository.findByAppointment_AppointmentId(appointmentId)
                 .orElseThrow(() -> new NotFoundException("Prescription not found for appointment"));
-        return PrescriptionMapper.toResponse(prescription);
+        return Mapper.toResponse(prescription);
     }
 
     @Transactional(readOnly = true)
     public List<PrescriptionResponseDTO> getAllPrescriptions() {
         return prescriptionRepository.findAll().stream()
-                .map(PrescriptionMapper::mapToPrescriptionResponse)
+                .map(Mapper::mapToPrescriptionResponse)
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +74,7 @@ public class PrescriptionService {
 
         Prescription saved = prescriptionRepository.save(prescription);
 
-        return PrescriptionMapper.mapToPrescriptionResponse(saved);
+        return Mapper.mapToPrescriptionResponse(saved);
     }
     @Transactional
     @CacheEvict(value = {PRESCRIPTION_BY_ID, PRESCRIPTION_BY_APPOINTMENT, ALL_PRESCRIPTIONS}, allEntries = true)

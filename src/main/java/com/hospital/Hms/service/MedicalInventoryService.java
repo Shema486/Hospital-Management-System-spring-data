@@ -4,6 +4,7 @@ import com.hospital.Hms.dto.request.InventoryRequestDTO;
 import com.hospital.Hms.dto.response.InventoryResponseDTO;
 import com.hospital.Hms.entity.MedicalInventory;
 import com.hospital.Hms.exception.NotFoundException;
+import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.InventoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +22,7 @@ public class MedicalInventoryService {
 
     private static final String INVENTORY_BY_ID = "inventoryById";
 
+
     @Transactional
     @CachePut(value = INVENTORY_BY_ID,key ="#result.itemId")
     public InventoryResponseDTO addInventory(InventoryRequestDTO dto) {
@@ -31,22 +33,31 @@ public class MedicalInventoryService {
         item.setUnitPrice(dto.getUnitPrice());
 
         repository.save(item);
-        return mapToResponse(item);
+        return Mapper.mapToResponseInventory(item);
     }
+
+
+
     @Transactional(readOnly = true)
     public List<InventoryResponseDTO> getAllInventory() {
         return repository.findByIsActiveTrue()
                 .stream()
-                .map(this::mapToResponse)
+                .map(Mapper::mapToResponseInventory)
                 .toList();
     }
+
+
+
     @Transactional(readOnly = true)
     @Cacheable(value = INVENTORY_BY_ID, key = "#id")
     public InventoryResponseDTO getById(Long id){
         MedicalInventory inventory = repository.findById(id)
                 .orElseThrow(()->new NotFoundException("Item not found"));
-        return mapToResponse(inventory);
+        return Mapper.mapToResponseInventory(inventory);
     }
+
+
+
     @Transactional
     @CachePut(value = INVENTORY_BY_ID,key ="#result.itemId")
     public InventoryResponseDTO updateInventory(Long itemId, InventoryRequestDTO dto) {
@@ -59,8 +70,11 @@ public class MedicalInventoryService {
         item.setUnitPrice(dto.getUnitPrice());
 
         repository.save(item);
-        return mapToResponse(item);
+        return Mapper.mapToResponseInventory(item);
     }
+
+
+
     @Transactional
     @CacheEvict( value = INVENTORY_BY_ID,key = "#itemId")
     public void deleteInventory(Long itemId) {
@@ -71,12 +85,5 @@ public class MedicalInventoryService {
         item.setIsActive(false);
         repository.save(item);
     }
-    private InventoryResponseDTO mapToResponse(MedicalInventory item) {
-        return new InventoryResponseDTO(
-                item.getItemId(),
-                item.getItemName(),
-                item.getStockQuantity(),
-                item.getUnitPrice()
-        );
-    }
+
 }
