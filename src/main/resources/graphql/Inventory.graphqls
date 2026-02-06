@@ -1,0 +1,23 @@
+type Inventory{
+    itemId:ID!
+    itemName:ID!
+    stockQuantity:Int
+    unitPrice:Float
+}
+
+input InventoryRequest {
+    itemName: String!
+    stockQuantity: Int!
+    unitPrice: Float!
+}
+
+extend type Query {
+    inventories: [Inventory!]!
+    getById(id:ID!):Inventory
+}
+
+extend type Mutation {
+    addInventory(input: InventoryRequest!): Inventory
+    deleteInventory(id: ID!): String!
+    updateInventory(id: ID!, input: InventoryRequest!): Inventory
+}

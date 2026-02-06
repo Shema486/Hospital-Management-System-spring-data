@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 
@@ -25,6 +26,7 @@ public class PatientFeedback {
     private Integer rating;
     private String comments;
 
+    @CreatedDate
     private LocalDate feedbackDate;
 }
 

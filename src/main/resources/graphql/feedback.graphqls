@@ -1,0 +1,20 @@
+type Feedback{
+    feedbackId:ID!
+    rating:Int
+    comments:String
+    feedbackDate:String
+}
+
+input FeedbackRequest{
+    patientId:ID!
+    comments:String!
+    rating:Int
+}
+
+extend type Query{
+    feedbacks(page: Int = 0, size: Int = 10, feedbackId: String):[Feedback!]!
+}
+ extend type Mutation{
+     deleteFeedback(id:ID!):String
+     saveFeedback(input: FeedbackRequest):Feedback
+ }

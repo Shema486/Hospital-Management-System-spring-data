@@ -1,0 +1,26 @@
+type Department{
+    deptId:ID!
+    deptName:String
+    locationFloor:Int
+}
+input DepartmentRequest{
+    locationFloor:Int!
+    deptName:String!
+}
+type DepartmentWithDoctors{
+    deptId:ID!
+    deptName:String
+    doctorNames:[String!]!
+}
+
+
+extend type Query{
+    departments(page: Int = 0, size: Int = 10):[Department!]
+    departmentById(id:ID!):Department
+    departmentWithDoctors(id:ID):DepartmentWithDoctors
+}
+
+extend type Mutation{
+    addDepartment(input:DepartmentRequest!):Department
+    deleteDepartment(id:ID!):String!
+}

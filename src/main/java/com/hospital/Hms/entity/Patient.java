@@ -1,14 +1,21 @@
 package com.hospital.Hms.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "patient")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Patient {
 
     @Id
@@ -23,7 +30,7 @@ public class Patient {
     private String lastName;
 
     @Column(nullable = false)
-    private Date birthdate;
+    private LocalDate birthdate;
 
     @Column(nullable = false)
     private String address;
@@ -42,7 +49,11 @@ public class Patient {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "patient")
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "patient",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

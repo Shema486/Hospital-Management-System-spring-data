@@ -1,0 +1,22 @@
+type PrescriptionItem{
+    prescriptionId:ID
+    itemId:ID
+    itemName:String
+    quantityDispensed:Int
+    dosageInstruction:String
+
+}
+
+
+input PrescriptionItemRequest{
+    prescriptionId:ID!
+    itemId:ID!
+    dosageInstruction:String
+    quantityDispensed:Int
+
+}
+
+extend type Mutation {
+    addItem(input:PrescriptionItemRequest):PrescriptionItem
+}
+
