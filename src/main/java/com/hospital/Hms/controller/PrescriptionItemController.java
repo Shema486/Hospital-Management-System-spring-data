@@ -18,34 +18,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/prescription-items")
 @RequiredArgsConstructor
-@Tag(
-        name = "Prescription Items",
-        description = "APIs for managing prescription medicine items"
-)
+@Tag(name = "Prescription Items", description = "APIs for managing prescription medicine items")
 public class PrescriptionItemController {
 
     private final PrescriptionItemService prescriptionItemService;
 
 
-    @Operation(
-            summary = "Add prescription item",
-            description = "Adds a medicine item to an existing prescription"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Prescription item added successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PrescriptionItemResponseDTO.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "400", description = "Invalid prescription item data", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Prescription not found", content = @Content)
-    })
-
     @PostMapping
+    @Operation(summary = "Add prescription item", description = "Adds a medicine item to an existing prescription")
+    @ApiResponse(responseCode = "201", description = "Prescription item added successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid prescription item data", content = @Content)
+    @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
+    @ApiResponse(responseCode = "404", description = "Prescription not found", content = @Content)
     public ResponseEntity<PrescriptionItemResponseDTO> addItem(
             @RequestBody PrescriptionItemRequestDTO dto) {
 
@@ -54,5 +38,7 @@ public class PrescriptionItemController {
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+
 }
 
