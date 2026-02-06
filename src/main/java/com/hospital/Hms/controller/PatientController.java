@@ -33,15 +33,11 @@ public class PatientController {
         this.patientService = patientService;
     }
 
-    @Operation(
-            summary = "Get all patients",
-            description = "Returns a list of all registered patients",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successfully retrieved list"),
-                    @ApiResponse(responseCode = "404", description = "No patients found")
-            }
-    )
+
     @GetMapping("findAll")
+    @Operation(summary = "Get all patients", description = "Returns a list of all registered patients")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
+    @ApiResponse(responseCode = "404", description = "No patients found")
     public ResponseEntity<Page<PatientResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -61,55 +57,41 @@ public class PatientController {
     }
 
 
-    @Operation(summary = "Update a  patient", description = "return the patient that updated",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "update successfully"),
-                    @ApiResponse(responseCode = "404", description = "No patient found")
-            }
-    )
     @PatchMapping("update/{id}")
+    @Operation(summary = "Update a  patient", description = "return the patient that updated")
+    @ApiResponse(responseCode = "201", description = "update successfully")
+    @ApiResponse(responseCode = "404", description = "No patient found")
     public ResponseEntity<PatientResponse> update(@PathVariable Long id, @RequestBody @Valid PatientUpdateRequest request){
      return    ResponseEntity.ok(patientService.update(id,request));
     }
 
-    @Operation(summary = "Add a new patient", description = "Creates a new patient record",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Patient created successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid input")
-            }
-    )
+
     @PostMapping("/save")
+    @Operation(summary = "Add a new patient", description = "Creates a new patient record")
+    @ApiResponse(responseCode = "201", description = "Patient created successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
     public ResponseEntity<PatientResponse> save (@RequestBody @Valid PatientRequest request){
         return ResponseEntity.ok(patientService.save(request));
     }
 
-    @Operation(
-            summary = "Get patient with appointments",
-            description = "Retrieves a patient along with appointment history"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Patient appointments retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Patient not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied")
-    })
     @GetMapping("/{patientId}/appointments")
+    @Operation(summary = "Get patient with appointments", description = "Retrieves a patient along with appointment history")
+    @ApiResponse(responseCode = "200", description = "Patient appointments retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Patient not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     public ResponseEntity<PatientWithAppointment> getPatientWithAppointment(
             @PathVariable Long patientId) {
-
         return ResponseEntity.ok(
                 patientService.getPatientWithAppointment(patientId)
         );
     }
-    @Operation(
-            summary = "Get patient with feedback",
-            description = "Retrieves a patient along with all submitted feedback"
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Patient feedback retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Patient not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied")
-    })
+
+
     @GetMapping("/{patientId}/feedback")
+    @Operation(summary = "Get patient with feedback", description = "Retrieves a patient along with all submitted feedback")
+    @ApiResponse(responseCode = "200", description = "Patient feedback retrieved successfully")
+    @ApiResponse(responseCode = "404", description = "Patient not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     public ResponseEntity<PatientWithFeedback> getPatientWithFeedback(
             @PathVariable Long patientId) {
 
@@ -117,19 +99,18 @@ public class PatientController {
                 patientService.getPatientWithFeedback(patientId)
         );
     }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<PatientResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(patientService.getById(id));
     }
 
-    @Operation(
-            summary = "Delete patient",
-            description = "remove  patient record",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Patient deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "no patient found")
-            }
-    )
+    @Operation(summary = "Delete patient", description = "remove  patient record")
+    @ApiResponse(responseCode = "201", description = "Patient deleted successfully")
+    @ApiResponse(responseCode = "404", description = "no patient found")
+
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id){
         patientService.deactivatePatient(id);
