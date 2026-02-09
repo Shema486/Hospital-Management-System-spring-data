@@ -8,6 +8,7 @@ import com.hospital.Hms.dto.response.SystemUserResponse;
 import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.entity.Role;
 import com.hospital.Hms.entity.SystemUser;
+import com.hospital.Hms.entity.UserPrinciple;
 import com.hospital.Hms.exception.BadRequestException;
 import com.hospital.Hms.exception.NotFoundException;
 import com.hospital.Hms.mapper.Mapper;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -34,13 +36,13 @@ import java.util.Collections;
 public class SystemUserService implements UserDetailsService {
 
     private final SystemUSerRepository uSerRepository;
-    private final PasswordUtil passwordUtil;
+    private final PasswordEncoder passwordEncoder;
     private final static String SYSTEM_USER = "systemUser";
 
     @Autowired
-    public SystemUserService(SystemUSerRepository uSerRepository, PasswordUtil passwordUtil) {
+    public SystemUserService(SystemUSerRepository uSerRepository, PasswordEncoder passwordEncoder) {
         this.uSerRepository = uSerRepository;
-        this.passwordUtil = passwordUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -63,7 +65,7 @@ public class SystemUserService implements UserDetailsService {
             throw new BadRequestException("User account is deactivated");
         }
 
-        if (!passwordUtil.checkPassword(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid username or password");
         }
 
@@ -81,7 +83,7 @@ public class SystemUserService implements UserDetailsService {
         SystemUser user = uSerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + id));
 
-        Mapper.updateUserFromRequest(user, request, uSerRepository, passwordUtil);
+        Mapper.updateUserFromRequest(user, request, uSerRepository, passwordEncoder);
 
         SystemUser saved = uSerRepository.save(user);
         return Mapper.mapToResponseUser(saved);
@@ -122,13 +124,10 @@ public class SystemUserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SystemUser user = uSerRepository.findByUsername(username).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        SystemUser user = uSerRepository.findByUsername(username)
+                .orElseThrow(()->new UsernameNotFoundException("User not found"));
 
-        return User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .authorities(Collections.emptyList())
-                .build();
+        return new UserPrinciple(user);
 
     }
 }
