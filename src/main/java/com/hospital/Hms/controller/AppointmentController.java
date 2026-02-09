@@ -31,8 +31,8 @@ public class AppointmentController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new appointment", description = "Schedules a new appointment for a patient with a doctor"
-    @ApiResponse(responseCode = "201", description = "Appointment successfully created",)
+    @Operation(summary = "Create a new appointment", description = "Schedules a new appointment for a patient with a doctor")
+    @ApiResponse(responseCode = "201", description = "Appointment successfully created")
     @ApiResponse(responseCode = "400", description = "Invalid appointment data", content = @Content)
     @ApiResponse(responseCode = "404", description = "Doctor or Patient not found", content = @Content)
     public ResponseEntity<AppointmentResponse> createAppointment(

@@ -18,15 +18,20 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 
 
 @Service
-public class SystemUserService {
+public class SystemUserService implements UserDetailsService {
 
     private final SystemUSerRepository uSerRepository;
     private final PasswordUtil passwordUtil;
@@ -115,5 +120,15 @@ public class SystemUserService {
     }
 
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        SystemUser user = uSerRepository.findByUsername(username).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
+        return User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .authorities(Collections.emptyList())
+                .build();
+
+    }
 }
