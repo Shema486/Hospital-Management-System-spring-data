@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class InventoryController {
 
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Add new inventory item", description = "Creates a new medical inventory record")
     @ApiResponse(responseCode = "201", description = "Inventory item created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid inventory data", content = @Content)
@@ -39,6 +41,7 @@ public class InventoryController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR')")
     @Operation(summary = "Get all inventory items", description = "Retrieves all medical inventory records")
     @ApiResponse(responseCode = "200", description = "Inventory retrieved successfully")
     public ResponseEntity<List<InventoryResponseDTO>> getAll() {
@@ -47,12 +50,14 @@ public class InventoryController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR')")
     public ResponseEntity<InventoryResponseDTO> getInventoryById(@PathVariable Long id) {
         InventoryResponseDTO response = service.getById(id);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Update inventory item", description = "Updates an existing medical inventory record by ID")
     @ApiResponse(responseCode = "200", description = "Inventory item updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid inventory data", content = @Content)
@@ -66,6 +71,7 @@ public class InventoryController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Delete inventory item", description = "Deletes a medical inventory record by its ID")
     @ApiResponse(responseCode = "204", description = "Inventory item deleted successfully")
     @ApiResponse(responseCode = "404", description = "Inventory item not found", content = @Content)

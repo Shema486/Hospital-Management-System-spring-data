@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +26,7 @@ public class PrescriptionItemController {
 
 
     @PostMapping
+    @PreAuthorize("hasRole('DOCTOR')")
     @Operation(summary = "Add prescription item", description = "Adds a medicine item to an existing prescription")
     @ApiResponse(responseCode = "201", description = "Prescription item added successfully")
     @ApiResponse(responseCode = "400", description = "Invalid prescription item data", content = @Content)

@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class DoctorController {
 
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
     @PatchMapping("update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public DoctorResponse updateDoctor(
             @PathVariable Long id,
             @RequestBody @Valid DoctorUpdateRequest request) {
@@ -38,6 +40,7 @@ public class DoctorController {
 
     @Operation(summary = "Delete a doctor", description = "use Id of doctor to delete him/her")
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> deleteDoctor(@PathVariable Long id) {
         doctorService.deactivateDoctor(id);
         return ResponseEntity.ok("Doctor deactivated successfully");
@@ -46,6 +49,7 @@ public class DoctorController {
 
     @Operation(summary = "Find all Doctors", description = "You can find all doctors in all departments")
     @GetMapping("/findAll")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<List<DoctorResponse>> findAll(
             @Parameter(description = "Page number ", example = "0")
             @RequestParam(required = false) int page,
@@ -68,6 +72,7 @@ public class DoctorController {
 
     @Operation(summary = "Create a doctor", description = "Registers a doctor and assigns them to a department")
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorResponse> save(
             @RequestBody @Valid DoctorRequest request){
         return ResponseEntity.ok(doctorService.save(request));
@@ -75,6 +80,7 @@ public class DoctorController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<DoctorResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(doctorService.getDoctorById(id));
     }
