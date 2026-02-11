@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,6 +31,7 @@ public class FeedbackController {
 
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE')")
     @Operation(summary = "Submit patient feedback", description = "Allows a patient to submit feedback and rating")
     @ApiResponse(responseCode = "201", description = "Feedback successfully submitted")
     @ApiResponse(responseCode = "400", description = "Invalid feedback data")
@@ -43,6 +45,7 @@ public class FeedbackController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE')")
     @Operation(summary = "Get all feedback", description = "Retrieves paginated patient feedback, optionally filtered by patient name")
     @ApiResponse(responseCode = "200", description = "Feedback retrieved successfully")
     public ResponseEntity<Page<FeedbackResponse>> getAllFeedback(
@@ -57,6 +60,7 @@ public class FeedbackController {
 
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Delete feedback", description = "Deletes patient feedback by its ID")
     @ApiResponse(responseCode = "204", description = "Feedback deleted successfully")
     @ApiResponse(responseCode = "400", description = "Feedback not found", content = @Content)

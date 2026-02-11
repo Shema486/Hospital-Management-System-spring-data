@@ -27,6 +27,7 @@ type LoginResponse {
     fullName: String
     role: Role
     createdAt: String
+    token:String!
 }
 
 extend type Query {

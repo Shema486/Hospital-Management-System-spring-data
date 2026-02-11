@@ -17,6 +17,7 @@ import com.hospital.Hms.repository.SystemUSerRepository;
 import com.hospital.Hms.service.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,12 +26,12 @@ import java.util.stream.Collectors;
 public class Mapper {
 
     private static DepartmentRepository departmentRepository ;
-    private static DoctorRepository doctorRepository;
+    private static  PasswordEncoder passwordEncoder ;
 
     @Autowired
-    public Mapper(DepartmentRepository departmentRepository,DoctorRepository doctorRepository) {
+    public Mapper(DepartmentRepository departmentRepository, PasswordEncoder passwordEncoder) {
         this.departmentRepository = departmentRepository;
-        this.doctorRepository = doctorRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -66,7 +67,7 @@ public class Mapper {
         SystemUser user = new SystemUser();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
-        user.setPassword(PasswordUtil.hashPassword(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setIsActive(true);
         user.setCreatedAt(LocalDateTime.now());
@@ -256,7 +257,7 @@ public class Mapper {
             SystemUser user,
             SystemUserUpdateRequest request,
             SystemUSerRepository userRepository,
-            PasswordUtil passwordUtil
+            PasswordEncoder passwordEncoder
     ) {
         // username
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
@@ -280,13 +281,13 @@ public class Mapper {
                 throw new IllegalArgumentException("Old password is required to set a new password");
             }
 
-            // Verify old password
-            if (!passwordUtil.checkPassword(request.getOldPassword(), user.getPassword())) {
+
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
                 throw new IllegalArgumentException("Old password is incorrect");
             }
 
-            // Hash and set new password
-            user.setPassword(passwordUtil.hashPassword(request.getNewPassword()));
+
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }
 
         // role

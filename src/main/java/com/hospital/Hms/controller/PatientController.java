@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -28,19 +29,19 @@ public class PatientController {
     private final PatientService patientService;
 
 
-    @Autowired
     public PatientController(PatientService patientService) {
         this.patientService = patientService;
     }
 
 
-    @GetMapping("findAll")
+    @GetMapping("/findAll")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     @Operation(summary = "Get all patients", description = "Returns a list of all registered patients")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
     @ApiResponse(responseCode = "404", description = "No patients found")
     public ResponseEntity<Page<PatientResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "patientId") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search
@@ -57,7 +58,8 @@ public class PatientController {
     }
 
 
-    @PatchMapping("update/{id}")
+    @PatchMapping("/update/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     @Operation(summary = "Update a  patient", description = "return the patient that updated")
     @ApiResponse(responseCode = "201", description = "update successfully")
     @ApiResponse(responseCode = "404", description = "No patient found")
@@ -67,6 +69,7 @@ public class PatientController {
 
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     @Operation(summary = "Add a new patient", description = "Creates a new patient record")
     @ApiResponse(responseCode = "201", description = "Patient created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
@@ -74,7 +77,8 @@ public class PatientController {
         return ResponseEntity.ok(patientService.save(request));
     }
 
-    @GetMapping("/{patientId}/appointments")
+    @GetMapping("/appointments/{patientId}")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR')")
     @Operation(summary = "Get patient with appointments", description = "Retrieves a patient along with appointment history")
     @ApiResponse(responseCode = "200", description = "Patient appointments retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Patient not found")
@@ -88,6 +92,7 @@ public class PatientController {
 
 
     @GetMapping("/{patientId}/feedback")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR')")
     @Operation(summary = "Get patient with feedback", description = "Retrieves a patient along with all submitted feedback")
     @ApiResponse(responseCode = "200", description = "Patient feedback retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Patient not found")
@@ -102,6 +107,7 @@ public class PatientController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<PatientResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(patientService.getById(id));
     }
@@ -110,8 +116,8 @@ public class PatientController {
     @ApiResponse(responseCode = "201", description = "Patient deleted successfully")
     @ApiResponse(responseCode = "404", description = "no patient found")
 
-
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     public ResponseEntity<String> delete(@PathVariable Long id){
         patientService.deactivatePatient(id);
         return ResponseEntity.ok("patient deleted successfully with ID:"+id);

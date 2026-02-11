@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,6 +43,7 @@ public class SystemUserController {
 
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all users", description = "Retrieve paginated list of system users, optionally filtered by name")
     @ApiResponse(responseCode = "200", description = "List of users retrieved successfully")
     public ResponseEntity<Page<SystemUserResponse>> findAll(
@@ -62,6 +64,7 @@ public class SystemUserController {
     }
 
     @DeleteMapping("/delete/user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Deactivate a user", description = "Deactivate a user by ID instead of deleting permanently")
     @ApiResponse(responseCode = "200", description = "User deactivated successfully")
     @ApiResponse(responseCode = "404", description = "User not found with given ID")
@@ -75,6 +78,7 @@ public class SystemUserController {
     @ApiResponse(responseCode = "400", description = "Invalid input data")
     @ApiResponse(responseCode = "404", description = "User not found with given ID")
     @PatchMapping("update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemUserResponse> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody SystemUserUpdateRequest request) {
@@ -83,6 +87,7 @@ public class SystemUserController {
 
 
     @GetMapping("/userId/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemUserResponse> findByUser(@PathVariable Long userId){
         return ResponseEntity.ok(systemUserService.findByUserId(userId));
     }

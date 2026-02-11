@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class PrescriptionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @Operation(summary = "Create prescription", description = "Creates a new prescription for a patient appointment")
     @ApiResponse(responseCode = "201", description = "Prescription created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid prescription data", content = @Content)
@@ -49,6 +51,7 @@ public class PrescriptionController {
     @ApiResponse(responseCode = "404", description = "Prescription not found", content = @Content)
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE','ADMIN')")
     public ResponseEntity<PrescriptionResponseDTO> getById(
             @PathVariable Long id) {
 
@@ -58,6 +61,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/appointment/{appointmentId}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'NURSE','ADMIN')")
     @Operation(summary = "Get prescription by appointment", description = "Retrieves a prescription associated with a specific appointment")
     @ApiResponse(responseCode = "200", description = "Prescription retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Prescription not found for appointment", content = @Content)
@@ -71,6 +75,7 @@ public class PrescriptionController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @Operation(summary = "Get all prescriptions", description = "Retrieves all prescriptions in the system")
     @ApiResponse(responseCode = "200", description = "Prescriptions retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PrescriptionResponseDTO.class)))
     public ResponseEntity<List<PrescriptionResponseDTO>> getAll() {
@@ -81,6 +86,7 @@ public class PrescriptionController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR')")
     @Operation(summary = "Delete prescription", description = "Deletes a prescription by its ID")
     @ApiResponse(responseCode = "204", description = "Prescription deleted successfully")
     @ApiResponse(responseCode = "404", description = "Prescription not found", content = @Content)

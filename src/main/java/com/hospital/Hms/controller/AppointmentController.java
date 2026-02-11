@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,8 +32,9 @@ public class AppointmentController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new appointment", description = "Schedules a new appointment for a patient with a doctor"
-    @ApiResponse(responseCode = "201", description = "Appointment successfully created",)
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
+    @Operation(summary = "Create a new appointment", description = "Schedules a new appointment for a patient with a doctor")
+    @ApiResponse(responseCode = "201", description = "Appointment successfully created")
     @ApiResponse(responseCode = "400", description = "Invalid appointment data", content = @Content)
     @ApiResponse(responseCode = "404", description = "Doctor or Patient not found", content = @Content)
     public ResponseEntity<AppointmentResponse> createAppointment(
@@ -44,6 +46,7 @@ public class AppointmentController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     @Operation(summary = "Get all appointments", description = "Retrieves a list of all scheduled appointments")
     @ApiResponse(responseCode = "200", description = "Appointments retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentResponse.class)))
     public ResponseEntity<List<AppointmentResponse>> getAllAppointments() {
@@ -52,6 +55,7 @@ public class AppointmentController {
 
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN' ,'DOCTOR')")
     @Operation(summary = "Update appointment status", description = "Updates the status of an existing appointment (e.g. SCHEDULED, COMPLETED, CANCELLED)")
     @ApiResponse(responseCode = "200", description = "Appointment status updated successfully")
     @ApiResponse(responseCode = "400", description = "Invalid status value")
@@ -65,6 +69,7 @@ public class AppointmentController {
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST')")
     @Operation(summary = "Delete an appointment", description = "Deletes an appointment by its ID")
     @ApiResponse(responseCode = "204", description = "Appointment deleted successfully")
     @ApiResponse(responseCode = "404", description = "Appointment not found")
