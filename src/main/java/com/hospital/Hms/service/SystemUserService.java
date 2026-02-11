@@ -6,43 +6,39 @@ import com.hospital.Hms.dto.response.LoginUserResponse;
 import com.hospital.Hms.dto.response.SystemUserResponse;
 
 import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
-import com.hospital.Hms.entity.Role;
+
 import com.hospital.Hms.entity.SystemUser;
-import com.hospital.Hms.entity.UserPrinciple;
+import com.hospital.Hms.entity.UserInfo;
 import com.hospital.Hms.exception.BadRequestException;
 import com.hospital.Hms.exception.NotFoundException;
 import com.hospital.Hms.mapper.Mapper;
 import com.hospital.Hms.repository.SystemUSerRepository;
+import com.hospital.Hms.security.JwtServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-
-
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 
 
 @Service
-public class SystemUserService implements UserDetailsService {
+public class SystemUserService {
 
     private final SystemUSerRepository uSerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtServices jwtServices;
     private final static String SYSTEM_USER = "systemUser";
 
     @Autowired
-    public SystemUserService(SystemUSerRepository uSerRepository, PasswordEncoder passwordEncoder) {
+    public SystemUserService(SystemUSerRepository uSerRepository, PasswordEncoder passwordEncoder, JwtServices jwtServices) {
         this.uSerRepository = uSerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtServices = jwtServices;
     }
 
     @Transactional
@@ -69,12 +65,16 @@ public class SystemUserService implements UserDetailsService {
             throw new BadRequestException("Invalid username or password");
         }
 
+        UserInfo principle = new UserInfo(user);
+        String token = jwtServices.generateToken(principle);
+
         return new LoginUserResponse(
                 user.getUserId(),
                 user.getUsername(),
                 user.getFullName(),
                 user.getRole(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                token
         );
     }
     @Transactional
@@ -114,20 +114,12 @@ public class SystemUserService implements UserDetailsService {
 
     @Transactional
     @CacheEvict(value = SYSTEM_USER, key = "#id")
-    public void deactivateUser(Long id){
-        SystemUser user = uSerRepository.findById(id)
+    public void deactivateUser(Long id){SystemUser user = uSerRepository.findById(id)
                 .orElseThrow(()->new NotFoundException("User not found"));
         user.setIsActive(false);
         uSerRepository.save(user);
     }
 
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        SystemUser user = uSerRepository.findByUsername(username)
-                .orElseThrow(()->new UsernameNotFoundException("User not found"));
 
-        return new UserPrinciple(user);
-
-    }
 }
