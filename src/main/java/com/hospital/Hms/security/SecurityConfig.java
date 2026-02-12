@@ -12,16 +12,15 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
-import org.springframework.security.web.AuthenticationEntryPoint;
+
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -37,13 +36,13 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
     private final JwtAccessDeniedHandler accessDeniedHandler;
     private final JwtFilter jwtFilter;
 
 
-
     @Bean
-    public SecurityFilterChain basicAuth(HttpSecurity http){
+    public SecurityFilterChain basicAuth(HttpSecurity http) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -52,21 +51,21 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
-                .authorizeHttpRequests(request-> request
+                .authorizeHttpRequests(request -> request
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/graghiql").permitAll()
+                        .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
+                        .requestMatchers("/graphql/**").permitAll()
+                        .requestMatchers("/graphiql/**").permitAll()
                         .requestMatchers("/user/login").permitAll()
-                        .requestMatchers("/user/add").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session->session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessHandler))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder){
@@ -75,10 +74,6 @@ public class SecurityConfig {
         return new ProviderManager(dao);
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource (){
