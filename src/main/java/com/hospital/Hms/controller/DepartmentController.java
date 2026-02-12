@@ -7,6 +7,7 @@ import com.hospital.Hms.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/department")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Departments", description = "Manage hospital departments")
 public class DepartmentController {
     private final DepartmentService departmentService;
