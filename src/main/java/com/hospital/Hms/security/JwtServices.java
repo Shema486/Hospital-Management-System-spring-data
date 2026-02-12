@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -19,14 +20,13 @@ import java.util.Date;
 public class JwtServices {
 
     @Value("${jwt.secret}")
-    private String SECRET;
+    private  String SECRET;
 
     @Value("${jwt.expiration}")
-    private long expirationMillis;
+    private  long expirationMillis;
 
-    public Key getSigningKey(){
-
-        return Keys.hmacShaKeyFor("8GiTswSOgKKw1T5KRPDhenlodJOdDY9MZiHm9KEcXWN".getBytes(StandardCharsets.UTF_8));
+    public  Key getSigningKey(){
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
 
@@ -46,10 +46,10 @@ public class JwtServices {
 
     public Claims extractClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(getSigningKey())
+                .verifyWith((SecretKey) getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public boolean isTokenExpired(String token) {
