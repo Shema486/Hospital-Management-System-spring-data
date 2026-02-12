@@ -2,6 +2,7 @@ package com.hospital.Hms.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hospital.Hms.entity.Role;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,6 +24,10 @@ public class SystemUserRequest {
     @NotBlank(message = "password is required")
     @Size(min =  8,message = "at least 8 characters")
     private String password;
+
+    @NotBlank(message = "password is required")
+    @Email(message = "invalid email ")
+    private String email;
 
     @NotNull(message = "Role is required")
     private Role role;
