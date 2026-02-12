@@ -107,7 +107,7 @@ public class PatientService {
                 .map(
                         a->new AppointmentSummaryDTO(
                         a.getAppointmentId(),
-                        a.getDoctor().getFirstName() + " " + a.getDoctor().getLastName(),
+                        a.getDoctor().getUser().getFullName(),
                         a.getAppointmentDate(),
                         a.getStatus()
                 )).collect(Collectors.toList());
