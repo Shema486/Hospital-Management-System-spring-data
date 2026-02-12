@@ -50,7 +50,7 @@ public class DepartmentService  {
 
         List<String> doctorNames = department.getDoctors()
                 .stream()
-                .map(d -> d.getFirstName() + " " + d.getLastName())
+                .map(d -> d.getUser().getFullName())
                 .toList();
 
         return new DepartmentWithDoctor(
