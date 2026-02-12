@@ -6,6 +6,7 @@ import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.service.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/doctors")
 @AllArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Doctors", description = "Manage doctors and their department assignments")
 public class DoctorController {
 
@@ -28,7 +30,7 @@ public class DoctorController {
 
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
     @PatchMapping("update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTORS')")
     public DoctorResponse updateDoctor(
             @PathVariable Long id,
             @RequestBody @Valid DoctorUpdateRequest request) {
@@ -52,13 +54,13 @@ public class DoctorController {
     @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<List<DoctorResponse>> findAll(
             @Parameter(description = "Page number ", example = "0")
-            @RequestParam(required = false) int page,
+            @RequestParam(required = false,defaultValue = "0") int page,
             @Parameter(description = "Page size ", example = "5")
-            @RequestParam(required = false) int size,
-            @Parameter(description = "Sorting by firsName/lastName/specialization/doctorId", example = "doctorId")
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false,defaultValue = "5") int size,
+            @Parameter(description = "Sorting by doctorId", example = "doctorId")
+            @RequestParam(required = false,defaultValue = "doctorId") String sortBy,
             @Parameter(description = "Sorting direction ASC/DESC", example = "ASC")
-            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false,defaultValue = "ASC") String sortDir,
             @Parameter(description = "Search by firsName/lastName/specialization/doctorId", example = "")
             @RequestParam(required = false) String search){
 
