@@ -1,6 +1,5 @@
 package com.hospital.Hms.security;
 
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,14 +15,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtServices jwtServices;
     private final UserDetailsService userDetailsService;
 
-
-    public JwtFilter(JwtServices jwtServices, UserDetailsService userDetailsService) {
+    public JwtFilter(JwtServices jwtServices,
+                     UserDetailsService userDetailsService) {
         this.jwtServices = jwtServices;
         this.userDetailsService = userDetailsService;
     }
@@ -35,39 +33,36 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+
         String authHeader = request.getHeader("Authorization");
         String token = null;
 
-        if(authHeader !=null && authHeader.startsWith("Bearer")){
-            token=authHeader.substring(7);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
         }
+
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            String username = jwtServices.extractUsername(token);
-            UserDetails user = userDetailsService.loadUserByUsername(username);
+            try {
+                String username = jwtServices.extractUsername(token);
+                if (username != null) {
+                    UserDetails user = userDetailsService.loadUserByUsername(username);
 
-            if (jwtServices.isTokenValid(token, user)) {
+                    if (jwtServices.isTokenValid(token, user)) {
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                user.getAuthorities()
-                        );
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
 
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authToken);
+            } catch (Exception e) {
+                System.out.println("Invalid JWT: " + e.getMessage());
             }
         }
 
         filterChain.doFilter(request, response);
     }
-
-
 }
