@@ -13,6 +13,7 @@ input CreateUserInput {
     username: String!
     fullName: String!
     password: String!
+    email:String!
     role: Role!
 }
 
