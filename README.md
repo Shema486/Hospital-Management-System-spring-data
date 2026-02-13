@@ -1,311 +1,261 @@
 # Hospital Healthcare Management System (HMS)
 
-A comprehensive Spring Boot application designed to manage hospital operations including patient management, doctor assignments, appointments, medical inventory, prescriptions, and feedback systems.
+A web-based hospital management backend built with Spring Boot and PostgreSQL.  
+The system is structured for enterprise-style development with layered architecture, REST and GraphQL APIs, centralized exception handling, validation, role-based access control, JWT authentication, OAuth2 login, and AOP-based monitoring.
 
-## Project Overview
+## System Architecture
 
-The Hospital Healthcare Management System is a modern, enterprise-grade backend application that provides a complete solution for managing hospital operations. It supports REST API endpoints, GraphQL queries, comprehensive audit logging, and performance monitoring through AOP (Aspect-Oriented Programming).
+The project follows a layered architecture to keep concerns separated and maintainable:
 
-## Technology Stack
+- Presentation Layer:
+  REST controllers in `controller/` and GraphQL controllers in `graphql/`.
+- Service Layer:
+  Business logic, transaction boundaries, and orchestration in `service/`.
+- Data Access Layer:
+  Persistence through Spring Data JPA repositories in `repository/`.
+- Cross-Cutting Concerns:
+  Logging and performance monitoring in `aspect/`, plus centralized error handling in `exception/`.
+- Domain Layer:
+  Core entities and enums in `entity/`.
 
-- Java 21
-- Spring Boot 4.0.2
-- Spring Data JPA - Database ORM
-- PostgreSQL - Database
-- GraphQL - API queries
-- OpenAPI 3.0 - API documentation
-- Lombok - Code generation
-- BCrypt - Password hashing
-- Spring AOP - Aspect-oriented programming for logging and performance monitoring
-- Spring Cache - In-memory caching
-- Spring Validation - Input validation
-- Maven - Build tool
+## Architectural Concepts
 
-## Core Features
+### 1. How Spring Wires the Application (Dependency Injection)
 
-1. Patient Management
-   - Register and manage patient information
-   - Track patient appointments and feedback
-   - View patient medical history
+Spring manages bean lifecycle and wiring. The codebase primarily uses constructor injection.
 
-2. Doctor Management
-   - Register and manage doctor profiles
-   - Assign doctors to departments
-   - Track doctor specializations and contact information
+Benefits in this project:
 
-3. Appointment Management
-   - Schedule patient appointments with doctors
-   - Track appointment status
-   - Manage appointment confirmations and cancellations
+- Clear dependencies between layers
+- Better testability
+- Safer immutability patterns
 
-4. Medical Inventory
-   - Manage medical supplies and equipment
-   - Track inventory levels
-   - Monitor inventory usage
+### 2. Layered MVC + Service Pattern
 
-5. Prescription Management
-   - Create and manage prescriptions for patients
-   - Track prescription items and dosages
-   - Maintain prescription history
+- Controllers expose API endpoints and validate input
+- Services enforce domain/business rules
+- Repositories abstract persistence logic
 
-6. Department Management
-   - Organize hospital departments
-   - Assign doctors to departments
-   - Manage department operations
+### 3. Aspect-Oriented Programming (AOP)
 
-7. Patient Feedback
-   - Collect patient feedback and ratings
-   - Generate feedback reports
-   - Improve service quality based on feedback
+Two aspects are currently implemented:
 
-8. System Users
-   - Manage hospital staff and administrators
-   - Control user roles and permissions
-   - Secure authentication with BCrypt
+- `LoggingAspect`:
+  Surrounds service methods and logs start/success/error details.
+- `PerformanceAspect`:
+  Measures execution time for controller, GraphQL, and service methods.
+
+Read full AOP guide: `docs/aop.md`
+
+### 4. GraphQL Integration
+
+GraphQL is implemented alongside REST to support flexible data retrieval and mutation workflows.
+
+- Schemas are in: `src/main/resources/graphql`
+- Resolver/controllers are in: `src/main/java/com/hospital/Hms/graphql`
+
+Read full GraphQL and GraphiQL guide: `docs/graphql.md`
+
+## Features
+
+### Hybrid API Support
+
+- REST APIs for hospital modules
+- GraphQL for flexible querying and mutations
+
+### Security
+
+- JWT authentication via `POST /user/login`
+- Role-based authorization with `@PreAuthorize`
+- OAuth2 login (Google client) with JWT issuance on success
+
+### Quality and Monitoring
+
+- Validation using Jakarta Bean Validation
+- Global exception handling for REST and GraphQL
+- AOP logging and performance monitoring
+- Swagger/OpenAPI for API exploration
+
+### Core Domain Modules
+
+- System Users
+- Patients
+- Doctors
+- Departments
+- Appointments
+- Prescriptions and Prescription Items
+- Medical Inventory
+- Patient Feedback
 
 ## Project Structure
 
-```
-src/main/java/com/hospital/Hms/
-├── HmsApplication.java           # Main Spring Boot application
-├── aspect/                        # AOP aspects
-│   ├── LoggingAspect.java        # Request/response logging
-│   └── PerformanceAspect.java    # Performance monitoring
-├── config/                        # Configuration classes
-│   └── OpenApiConfig.java        # Swagger/OpenAPI configuration
-├── controller/                    # REST API controllers
-│   ├── PatientController.java
-│   ├── DoctorController.java
-│   ├── AppointmentController.java
-│   ├── InventoryController.java
-│   ├── PrescriptionController.java
-│   ├── DepartmentController.java
-│   ├── FeedbackController.java
-│   ├── SystemUserController.java
-│   └── PrescriptionItemController.java
-├── dto/                           # Data Transfer Objects
-│   ├── request/                   # Request DTOs
-│   ├── response/                  # Response DTOs
-│   └── update/                    # Update DTOs
-├── entity/                        # JPA entities
-│   ├── Patient.java
-│   ├── Doctor.java
-│   ├── Department.java
-│   ├── Appointment.java
-│   ├── Prescription.java
-│   ├── MedicalInventory.java
-│   ├── PatientFeedback.java
-│   ├── SystemUser.java
-│   ├── Gender.java
-│   ├── Role.java
-│   └── AppointmentStatus.java
-├── exception/                     # Custom exceptions
-├── graphql/                       # GraphQL resolvers
-├── mapper/                        # Entity-DTO mappers
-├── repository/                    # Data access layer
-└── service/                       # Business logic layer
-
-src/main/resources/
-├── application.properties         # Application configuration
-├── application-dev.properties    # Development profile
-├── application-prod.properties   # Production profile
-├── application-test.properties   # Test profile
-└── graphql/                       # GraphQL schema files
+```text
+.
+|- docs/
+|  |- aop.md                          AOP documentation and run/verify guide
+|  |- graphql.md                      GraphQL and GraphiQL documentation and run/verify guide
+|- src/main/java/com/hospital/Hms/
+|  |- HmsApplication.java             Spring Boot entry point
+|  |- aspect/                         AOP aspects (logging, performance)
+|  |- Config/                         OpenAPI configuration
+|  |- controller/                     REST controllers
+|  |- dto/                            Request/response/update DTOs
+|  |- entity/                         Domain entities and enums
+|  |- exception/                      Global exception handlers
+|  |- graphql/                        GraphQL controllers (queries/mutations)
+|  |- mapper/                         DTO/entity mapping helpers
+|  |- repository/                     Spring Data JPA repositories
+|  |- security/                       JWT, OAuth2 success handler, filter, config
+|  |- service/                        Business logic
+|- src/main/resources/
+|  |- graphql/                        GraphQL schema files (*.graphqls)
+|  |- application.properties          Base config (default active profile)
+|  |- application-dev.properties      Dev profile config
+|  |- application-prod.properties     Prod profile config
+|  |- application-test.properties     Test profile config
+|- pom.xml                            Maven configuration
 ```
 
-## Prerequisites
+## Tech Stack and Dependencies
 
-- Java 21 or higher
-- PostgreSQL database
-- Maven 3.6 or higher
-- Git
+### Core Technologies
 
-## Installation and Setup
+- Framework: Spring Boot 4.0.2
+- Language: Java 21
+- Database: PostgreSQL
+- API: REST + GraphQL
+- Security: Spring Security, JWT, OAuth2 (Google)
 
-1. Clone the repository:
+### Key Dependencies
+
+- Spring Data JPA
+- Spring Web MVC
+- Spring GraphQL
+- Spring Validation
+- Spring AOP
+- Spring Cache
+- Spring Security OAuth2 Client
+- JJWT (`io.jsonwebtoken`)
+- Springdoc OpenAPI
+- Lombok
+
+## Configuration and Profiles
+
+Profiles available:
+
+- `dev` (default):
+  Swagger and GraphiQL enabled.
+- `prod`:
+  API docs disabled, GraphiQL disabled.
+- `test`:
+  API docs disabled, GraphiQL disabled.
+
+Run with profile:
+
 ```bash
-git clone <repository-url>
-cd Hms
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=prod"
 ```
 
-2. Configure your database connection in `application-dev.properties`:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/hospital_db
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-spring.jpa.hibernate.ddl-auto=update
+## Setup and Installation
+
+### 1. Prerequisites
+
+- Java 21+
+- PostgreSQL running locally or remotely
+- Maven 3.6+
+
+### 2. Environment Configuration
+
+Create/update `.env` in the project root:
+
+```env
+DB_HOST=jdbc:postgresql://localhost:5432/hospital_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+SECRET_KEY=your_32_plus_char_secret
+DURATION_EXPIRATION=1800000
+CLIENT_ID=your_google_oauth_client_id
+CLIENT_SECRET=your_google_oauth_client_secret
 ```
 
-3. Build the project:
+### 3. Build and Run
+
 ```bash
 mvn clean install
-```
-
-## Running the Application
-
-1. Run with Maven:
-```bash
 mvn spring-boot:run
 ```
 
-2. The application will start on `http://localhost:8080` by default.
+### 4. Useful URLs (dev profile)
 
-3. Access the API documentation at `http://localhost:8080/swagger-ui.html`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- GraphQL endpoint: `http://localhost:8080/graphql`
+- GraphiQL: `http://localhost:8080/graphiql`
 
-4. Access GraphQL endpoint at `http://localhost:8080/graphql`
+## Main Endpoint Groups
 
-## API Documentation
+- `/user/*`
+- `/patient/*`
+- `/doctors/*`
+- `/department/*`
+- `/api/appointments/*`
+- `/api/prescriptions/*`
+- `/api/prescription-items/*`
+- `/api/inventory/*`
+- `/api/feedback/*`
 
-The application provides comprehensive API documentation through OpenAPI 3.0 (Swagger). After starting the application, visit:
+## Authentication Quick Start
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- API Documentation: `http://localhost:8080/v3/api-docs`
+1. Login:
 
-## API Endpoints Overview
+```http
+POST /user/login
+Content-Type: application/json
 
-### Patient Management
-- `GET /patient` - List all patients
-- `POST /patient` - Create new patient
-- `GET /patient/{id}` - Get patient details
-- `PUT /patient/{id}` - Update patient
-
-### Doctor Management
-- `GET /doctors` - List all doctors
-- `POST /doctors` - Register doctor
-- `PATCH /doctors/update/{id}` - Update doctor
-
-### Appointments
-- `GET /api/appointments` - List appointments
-- `POST /api/appointments` - Create appointment
-- `GET /api/appointments/{id}` - Get appointment details
-- `PATCH /api/appointments/{id}/status` - Update appointment status
-- `DELETE /api/appointments/{id}` - Cancel appointment
-
-### Medical Inventory
-- `GET /api/inventory` - List inventory items
-- `POST /api/inventory` - Add inventory item
-- `GET /api/inventory/{id}` - Get inventory details
-- `PUT /api/inventory/{id}` - Update inventory
-- `DELETE /api/inventory/{id}` - Remove inventory item
-
-### Prescriptions
-- `GET /prescription` - List prescriptions
-- `POST /prescription` - Create prescription
-- `GET /prescription/{id}` - Get prescription details
-- `PUT /prescription/{id}` - Update prescription
-
-### Feedback
-- `GET /api/feedback` - List feedback
-- `POST /api/feedback` - Submit feedback
-- `GET /api/feedback/{id}` - Get feedback details
-
-### Departments
-- `GET /departments` - List departments
-- `POST /departments` - Create department
-- `GET /departments/{id}` - Get department details
-
-## Key Features Implementation
-
-### Logging and Monitoring
-- LoggingAspect logs all incoming requests and outgoing responses
-- PerformanceAspect monitors method execution time and logs performance metrics
-- Configured using Spring AOP
-
-### Input Validation
-- All DTOs use Jakarta validation annotations
-- Custom validation rules for business logic
-- Automatic validation at controller layer
-
-### Caching
-- Spring Cache enabled for improved performance
-- Configurable caching strategies for frequently accessed data
-
-### Database
-- PostgreSQL for persistent data storage
-- Spring Data JPA for database operations
-- Support for pagination and sorting
-
-### Security
-- BCrypt for password hashing
-- Role-based access control through SystemUser and Role entities
-- Request validation and error handling
-
-## Database Schema
-
-The application uses the following main entities:
-
-1. Patient - Hospital patients
-2. Doctor - Hospital medical staff
-3. Department - Hospital departments
-4. Appointment - Patient appointments with doctors
-5. Prescription - Medicine prescriptions for patients
-6. PrescriptionItem - Individual items in prescriptions
-7. MedicalInventory - Hospital medical supplies and equipment
-8. PatientFeedback - Patient feedback and ratings
-9. SystemUser - System users and administrators
-10. Role - User roles for access control
-
-## Configuration Profiles
-
-The application supports multiple configuration profiles:
-
-- `dev` - Development environment
-- `prod` - Production environment
-- `test` - Testing environment
-
-Activate a profile using:
-```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
+{
+  "username": "your_username",
+  "password": "your_password"
+}
 ```
 
-## Building for Production
+2. Use returned token:
 
-Create a production-ready JAR file:
-
-```bash
-mvn clean package
+```http
+Authorization: Bearer <jwt_token>
 ```
 
-Run the JAR file:
+## Role Access Guide
 
-```bash
-java -jar target/Hms-0.0.1-SNAPSHOT.jar
-```
+### `ADMIN`
 
-## Troubleshooting
+- Can do: Full access across users, patients, doctors, departments, appointments, prescriptions, inventory, and feedback.
+- Cannot do: No functional restrictions in current role rules.
 
-1. Database Connection Issues
-   - Ensure PostgreSQL is running
-   - Verify database credentials in properties file
-   - Check that the database exists
+### `DOCTOR`
 
-2. Port Already in Use
-   - Change server port in application properties: `server.port=8081`
+- Can do: View patients/doctors/departments/appointments, update appointment status, create prescriptions, delete prescriptions, create prescription items, read inventory.
+- Cannot do: Create system users, manage inventory write operations, create/deactivate patients, create/deactivate departments, create/deactivate appointments (unless admin/reception role is also granted).
 
-3. Build Issues
-   - Clear Maven cache: `mvn clean`
-   - Rebuild: `mvn install`
+### `NURSE`
 
-## Future Enhancements
+- Can do: View patients/doctors/departments/appointments, read inventory, create/view feedback, read prescription details.
+- Cannot do: Create users, create doctors, manage departments, manage inventory writes, create/delete prescriptions, create prescription items, change appointment status.
 
-- Email notifications for appointments
-- SMS alerts for patients
-- Advanced reporting and analytics
-- Mobile application support
-- Integration with payment systems
-- Telemedicine capabilities
-- Multilingual support
+### `RECEPTIONIST`
 
-## License
+- Can do: Create/update/deactivate patients, create/delete appointments, view patients/doctors/departments, update permitted user profile endpoints.
+- Cannot do: Create users, create doctors, manage inventory, manage prescriptions, change appointment status, create feedback as nurse/admin routes.
 
-This project is licensed under the terms specified in the LICENSE file.
+## Documentation Files
 
-## Contact and Support
+- AOP: `docs/aop.md`
+- GraphQL and GraphiQL: `docs/graphql.md`
 
-For issues, questions, or contributions, please contact the development team or submit issues through the project repository.
+Quick links:
+
+- [AOP Guide](docs/aop.md)
+- [GraphQL and GraphiQL Guide](docs/graphql.md)
 
 ## Version
 
-Current Version: 0.0.1-SNAPSHOT
-
-Last Updated: 2026
+`0.0.1-SNAPSHOT`
