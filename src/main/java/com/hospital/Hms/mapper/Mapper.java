@@ -58,7 +58,7 @@ public class Mapper {
         SystemUser user = new SystemUser();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
-        user.setEmail(user.getEmail());
+        user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setIsActive(true);

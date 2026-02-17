@@ -31,7 +31,7 @@ public class PrescriptionItemService {
         Prescription prescription = prescriptionRepository.findById(dto.getPrescriptionId())
                 .orElseThrow(() -> new NotFoundException("Prescription not found"));
 
-        MedicalInventory item = inventoryRepository.findById(dto.getItemId())
+        MedicalInventory item = inventoryRepository.findByIdForUpdate(dto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Inventory item not found"));
 
         //  Business rule: stock check

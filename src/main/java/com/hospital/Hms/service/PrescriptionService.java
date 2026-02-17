@@ -1,5 +1,6 @@
 package com.hospital.Hms.service;
 
+import com.hospital.Hms.async.NotificationService;
 import com.hospital.Hms.dto.request.PrescriptionRequestDTO;
 import com.hospital.Hms.dto.response.PrescriptionResponseDTO;
 import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
@@ -26,20 +27,22 @@ import java.util.stream.Collectors;
 public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
+    private final NotificationService notificationService;
     private static final String PRESCRIPTION_BY_ID = "prescriptionById";
     private static final String PRESCRIPTION_BY_APPOINTMENT = "prescriptionByAppointment";
     private static final String ALL_PRESCRIPTIONS = "allPrescriptions";
 
     @Autowired
-    public PrescriptionService(PrescriptionRepository prescriptionRepository, AppointmentRepository appointmentRepository) {
+    public PrescriptionService(PrescriptionRepository prescriptionRepository, AppointmentRepository appointmentRepository, NotificationService notificationService) {
         this.prescriptionRepository = prescriptionRepository;
         this.appointmentRepository = appointmentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = PRESCRIPTION_BY_ID,key = "#id")
     public PrescriptionResponseDTO getPrescriptionById(Long id) {
-        Prescription prescription = prescriptionRepository.findById(id)
+        Prescription prescription = prescriptionRepository.findByPrescriptionId(id)
                 .orElseThrow(() -> new NotFoundException("Prescription not found"));
         return Mapper.mapToPrescriptionResponse(prescription);
     }
@@ -54,7 +57,7 @@ public class PrescriptionService {
 
     @Transactional(readOnly = true)
     public List<PrescriptionResponseDTO> getAllPrescriptions() {
-        return prescriptionRepository.findAll().stream()
+        return prescriptionRepository.findAllBy().stream()
                 .map(Mapper::mapToPrescriptionResponse)
                 .collect(Collectors.toList());
     }
@@ -73,6 +76,11 @@ public class PrescriptionService {
         prescription.setDateIssued(LocalDateTime.now());
 
         Prescription saved = prescriptionRepository.save(prescription);
+
+        notificationService.sendPrescriptionIssuedNotification(
+                saved.getPrescriptionId(),
+                appointment.getAppointmentId()
+        );
 
         return Mapper.mapToPrescriptionResponse(saved);
     }

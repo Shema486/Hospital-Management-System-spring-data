@@ -1,5 +1,6 @@
 package com.hospital.Hms.service;
 
+import com.hospital.Hms.async.NotificationService;
 import com.hospital.Hms.dto.request.AppointmentRequest;
 import com.hospital.Hms.dto.response.AppointmentResponse;
 import com.hospital.Hms.entity.Appointment;
@@ -27,14 +28,16 @@ public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
+    private final NotificationService notificationService;
     private final PatientRepository patientRepository;
     private final static String APPOINTMENT_NAME_CACHE="appointments";
 
     public AppointmentService(AppointmentRepository appointmentRepository,
-                              DoctorRepository doctorRepository,
+                              DoctorRepository doctorRepository, NotificationService notificationService,
                               PatientRepository patientRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
+        this.notificationService = notificationService;
         this.patientRepository = patientRepository;
     }
 
@@ -42,10 +45,10 @@ public class AppointmentService {
     @CachePut(value = APPOINTMENT_NAME_CACHE,key = "#result.appointmentId")
     public AppointmentResponse addAppointment(AppointmentRequest request) {
 
-        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+        Doctor doctor = doctorRepository.findByDoctorIdAndIsActiveTrue(request.getDoctorId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-        Patient patient = patientRepository.findById(request.getPatientId())
+        Patient patient = patientRepository.findByPatientIdAndIsActiveTrue(request.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
 
         if (appointmentRepository.existsByDoctorAndAppointmentDate(
@@ -55,13 +58,19 @@ public class AppointmentService {
 
         Appointment appointment = Mapper.mapToAppointment(request, doctor, patient);
         Appointment saved = appointmentRepository.save(appointment);
+
+        notificationService.sendAppointmentNotification(
+                saved.getAppointmentId(),
+                patient.getFirstName() + " " + patient.getLastName(),
+                doctor.getUser().getFullName()
+        );
         return Mapper.mapToResponseAppointment(saved);
     }
 
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
-        return appointmentRepository.findAll()
+        return appointmentRepository.findAllWithPatientAndDoctor()
                 .stream()
                 .map(Mapper::mapToResponseAppointment)
                 .collect(Collectors.toList());

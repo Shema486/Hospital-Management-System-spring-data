@@ -118,10 +118,10 @@ public class DoctorService {
     public List<DoctorResponse> findAllDoctor(String search, Pageable pageable){
         List<Doctor> doctor;
         if (search ==null){
-            doctor = doctorRepository.findAll(pageable).getContent();
+            doctor = doctorRepository.findByIsActiveTrue(pageable).getContent();
         }
         else {
-            doctor = doctorRepository.findActiveDoctors(search, pageable).getContent();
+            doctor = doctorRepository.searchActiveDoctors(search, pageable).getContent();
         }
         return doctor.stream()
                 .map(Mapper::mapToResponseDoctor)
@@ -132,7 +132,7 @@ public class DoctorService {
     @Cacheable(value = DOCTOR_BY_ID_CACHE, key = "#id")
     @Transactional(readOnly = true)
     public DoctorResponse getDoctorById(Long id) {
-        Doctor doctor = doctorRepository.findById(id)
+        Doctor doctor = doctorRepository.findByDoctorIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
         return Mapper.mapToResponseDoctor(doctor);
     }
