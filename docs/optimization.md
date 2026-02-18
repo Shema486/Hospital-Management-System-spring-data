@@ -54,7 +54,7 @@ This reflects common read-heavy usage in hospital front-desk and dashboard views
 Baseline performance was unstable. Response times were high, tail latency was severe (P95/P99 > 3 seconds), and error rate exceeded 70%, which is unacceptable for a healthcare system.
 
 ### 5.3 Baseline Evidence (JMeter)
-![Figure 1: Baseline JMeter Aggregate Report](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/first%20request.png)
+![Figure 1: Baseline JMeter Aggregate Report](images/first-request.png)
 
 ---
 
@@ -77,8 +77,8 @@ The following optimizations were added to improve query efficiency and response 
   - `appointment.patient`
 
 ### 6.3 Optimization Evidence
-![Figure 2: EntityGraph optimization evidence](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/entityGraph.png)
-![Figure 3: Additional optimization evidence](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/async.png)
+![Figure 2: EntityGraph optimization evidence](images/entityGraph.png)
+![Figure 3: Additional optimization evidence](images/async.png)
 
 ---
 
@@ -128,9 +128,9 @@ The following optimizations were added to improve query efficiency and response 
 - GC was not a visible bottleneck during these tests.
 
 ### 8.5 VisualVM Evidence
-![Figure 4: VisualVM monitor (high CPU phase)](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/request1.png)
-![Figure 5: VisualVM monitor (improved stable phase)](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/request2.png)
-![Figure 6: VisualVM monitor (startup/no-load view)](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/no%20request%20yet.png)
+![Figure 4: VisualVM monitor (high CPU phase)](images/request1.png)
+![Figure 5: VisualVM monitor (improved stable phase)](images/request2.png)
+![Figure 6: VisualVM monitor (startup/no-load view)](images/no-request-yet.png)
 
 ---
 
@@ -155,4 +155,5 @@ These results confirm that combining **indexes, pagination, caching, and EntityG
 ---
 
 ## Appendix: Additional Evidence
-![Figure A1: Additional project screenshot](C:/Users/Amalitech/OneDrive/Desktop/Amalitec/screenshot/report/first/index.png)
+![Figure A1: Additional project screenshot](images/index.png)
+
