@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
+    @EntityGraph(attributePaths = {"doctor", "doctor.user", "patient"})
+    Optional<Appointment> findById(Long id);
 
     @EntityGraph(attributePaths = {"patient", "doctor"})
     @Query("SELECT a FROM Appointment a")

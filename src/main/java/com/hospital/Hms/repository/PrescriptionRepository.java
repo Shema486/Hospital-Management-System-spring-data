@@ -23,8 +23,9 @@ public interface PrescriptionRepository extends JpaRepository<Prescription,Long>
     Optional<Prescription> findByPrescriptionId(Long id);
     @EntityGraph(attributePaths = {
             "appointment",
-            "items",
-            "items.item"
+            "appointment.doctor",
+            "appointment.doctor.user",
+            "appointment.patient"
     })
     Optional<Prescription> findByAppointment_AppointmentId(Long appointmentId);
 }
