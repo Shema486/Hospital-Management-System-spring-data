@@ -7,9 +7,10 @@ import com.hospital.Hms.dto.response.SystemUserResponse;
 import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.service.SystemUserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "System Users", description = "Operations related to system users")
 public class SystemUserController {
 
@@ -37,6 +39,7 @@ public class SystemUserController {
     @ApiResponse(responseCode = "400", description = "Invalid input data")
 
     @PostMapping("/add")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemUserResponse> save(@Valid @RequestBody SystemUserRequest request) {
         return ResponseEntity.ok(systemUserService.save(request));
     }
@@ -78,7 +81,7 @@ public class SystemUserController {
     @ApiResponse(responseCode = "400", description = "Invalid input data")
     @ApiResponse(responseCode = "404", description = "User not found with given ID")
     @PatchMapping("update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<SystemUserResponse> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody SystemUserUpdateRequest request) {
