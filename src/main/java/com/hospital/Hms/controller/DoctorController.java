@@ -6,12 +6,14 @@ import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.service.DoctorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +21,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/doctors")
 @AllArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Doctors", description = "Manage doctors and their department assignments")
 public class DoctorController {
 
     private final DoctorService doctorService;
 
+
     @Operation(summary = "Update a doctor", description = "you can update  names, specialization, email, phone and also department")
     @PatchMapping("update/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTORS')")
     public DoctorResponse updateDoctor(
             @PathVariable Long id,
             @RequestBody @Valid DoctorUpdateRequest request) {
@@ -34,24 +39,28 @@ public class DoctorController {
     }
 
 
+
     @Operation(summary = "Delete a doctor", description = "use Id of doctor to delete him/her")
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> deleteDoctor(@PathVariable Long id) {
         doctorService.deactivateDoctor(id);
         return ResponseEntity.ok("Doctor deactivated successfully");
     }
 
+
     @Operation(summary = "Find all Doctors", description = "You can find all doctors in all departments")
     @GetMapping("/findAll")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<List<DoctorResponse>> findAll(
             @Parameter(description = "Page number ", example = "0")
-            @RequestParam(required = false) int page,
+            @RequestParam(required = false,defaultValue = "0") int page,
             @Parameter(description = "Page size ", example = "5")
-            @RequestParam(required = false) int size,
-            @Parameter(description = "Sorting by firsName/lastName/specialization/doctorId", example = "doctorId")
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false,defaultValue = "5") int size,
+            @Parameter(description = "Sorting by doctorId", example = "doctorId")
+            @RequestParam(required = false,defaultValue = "doctorId") String sortBy,
             @Parameter(description = "Sorting direction ASC/DESC", example = "ASC")
-            @RequestParam(required = false) String sortDir,
+            @RequestParam(required = false,defaultValue = "ASC") String sortDir,
             @Parameter(description = "Search by firsName/lastName/specialization/doctorId", example = "")
             @RequestParam(required = false) String search){
 
@@ -62,13 +71,18 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.findAllDoctor(search,PageRequest.of(page,size,sort)));
     }
 
+
     @Operation(summary = "Create a doctor", description = "Registers a doctor and assigns them to a department")
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorResponse> save(
             @RequestBody @Valid DoctorRequest request){
         return ResponseEntity.ok(doctorService.save(request));
     }
+
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','NURSE','DOCTOR','RECEPTIONIST')")
     public ResponseEntity<DoctorResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(doctorService.getDoctorById(id));
     }

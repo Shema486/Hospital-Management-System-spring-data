@@ -9,8 +9,7 @@ type Doctor{
 }
 
 input DoctorRequest{
-    firstName:String!
-    lastName:String!
+    userId:ID!
     email:String!
     phone:String!
     deptId:ID!

@@ -1,11 +1,11 @@
 package com.hospital.Hms.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLDelete;
+
 
 @Entity
 @Table(name = "doctors")
@@ -18,16 +18,15 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long doctorId;
 
-    private String firstName;
-    private String lastName;
     private String specialization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dept_id")
     private Department department;
 
-    @Column(unique = true,nullable = false)
-    private String email;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private SystemUser user;
 
     private String phone;
 

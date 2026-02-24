@@ -13,6 +13,7 @@ input CreateUserInput {
     username: String!
     fullName: String!
     password: String!
+    email:String!
     role: Role!
 }
 
@@ -27,6 +28,7 @@ type LoginResponse {
     fullName: String
     role: Role
     createdAt: String
+    token:String!
 }
 
 extend type Query {

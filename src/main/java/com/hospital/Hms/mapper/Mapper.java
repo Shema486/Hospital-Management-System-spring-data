@@ -2,21 +2,14 @@ package com.hospital.Hms.mapper;
 
 
 import com.hospital.Hms.dto.request.AppointmentRequest;
-import com.hospital.Hms.dto.request.DoctorRequest;
 import com.hospital.Hms.dto.request.PatientRequest;
 import com.hospital.Hms.dto.request.SystemUserRequest;
 import com.hospital.Hms.dto.response.*;
-import com.hospital.Hms.dto.update.DoctorUpdateRequest;
 import com.hospital.Hms.dto.update.PatientUpdateRequest;
 import com.hospital.Hms.dto.update.SystemUserUpdateRequest;
 import com.hospital.Hms.entity.*;
-import com.hospital.Hms.exception.NotFoundException;
-import com.hospital.Hms.repository.DepartmentRepository;
-import com.hospital.Hms.repository.DoctorRepository;
 import com.hospital.Hms.repository.SystemUSerRepository;
-import com.hospital.Hms.service.PasswordUtil;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,13 +17,12 @@ import java.util.stream.Collectors;
 @Service
 public class Mapper {
 
-    private static DepartmentRepository departmentRepository ;
-    private static DoctorRepository doctorRepository;
 
-    @Autowired
-    public Mapper(DepartmentRepository departmentRepository,DoctorRepository doctorRepository) {
-        this.departmentRepository = departmentRepository;
-        this.doctorRepository = doctorRepository;
+    private static  PasswordEncoder passwordEncoder ;
+
+    public Mapper( PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+
     }
 
 
@@ -66,7 +58,8 @@ public class Mapper {
         SystemUser user = new SystemUser();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
-        user.setPassword(PasswordUtil.hashPassword(request.getPassword()));
+        user.setEmail(user.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setIsActive(true);
         user.setCreatedAt(LocalDateTime.now());
@@ -151,61 +144,14 @@ public class Mapper {
                 feedback.getFeedbackDate()
         );
     }
-    public static Doctor mapToEntityDoctor(DoctorRequest request) {
-        Doctor dto = new Doctor();
-
-        dto.setFirstName(request.getFirstName());
-        dto.setLastName(request.getLastName());
-        dto.setEmail(request.getEmail());
-        dto.setPhone(request.getPhone());
-        dto.setSpecialization(request.getSpecialization());
-        if(request.getDeptId() != null){
-            Department department = departmentRepository
-                    .findById(request.getDeptId())
-                    .orElseThrow(()-> new NotFoundException("Department Not found"));
-            dto.setDepartment(department);
-        }
-        return dto;
-    }
-
-    public static void updateDoctorFromRequest(Doctor doctor, DoctorUpdateRequest request, DepartmentRepository departmentRepository) {
-        if (request.getFirstName() != null)
-            doctor.setFirstName(request.getFirstName());
-
-        if (request.getLastName() != null)
-            doctor.setLastName(request.getLastName());
-
-        if (request.getEmail() != null)
-            doctor.setEmail(request.getEmail());
-
-        if (request.getPhone() != null)
-            doctor.setPhone(request.getPhone());
-
-        if (request.getSpecialization() != null)
-            doctor.setSpecialization(request.getSpecialization());
-        doctor.setFirstName(request.getFirstName());
-        doctor.setLastName(request.getLastName());
-        doctor.setEmail(request.getEmail());
-        doctor.setPhone(request.getPhone());
-        doctor.setSpecialization(request.getSpecialization());
-
-        if (request.getDeptId() != null) {
-            Department department = departmentRepository.findById(request.getDeptId())
-                    .orElseThrow(() -> new RuntimeException("Department not found"));
-            doctor.setDepartment(department);
-        } else {
-            doctor.setDepartment(null);
-        }
-    }
-
     public static DoctorResponse mapToResponseDoctor(Doctor doctor) {
-        String deptName = doctor.getDepartment() != null
-                ? doctor.getDepartment().getDeptName()
-                : null;
+        String deptName = doctor.getDepartment() != null ? doctor.getDepartment().getDeptName() : null;
+        String email = doctor.getUser() != null ? doctor.getUser().getEmail() : null;
+        String fullName =  doctor.getUser() != null ? doctor.getUser().getFullName() : null;
         return new DoctorResponse(
                 doctor.getDoctorId(),
-                doctor.getFirstName() +" "+ doctor.getLastName(),
-                doctor.getEmail(),
+                fullName,
+                email,
                 doctor.getPhone(),
                 doctor.getSpecialization(),
                 deptName,
@@ -227,8 +173,7 @@ public class Mapper {
                 : null;
 
         String doctorName = appointment.getDoctor() != null
-                ? appointment.getDoctor().getFirstName() + " " +
-                appointment.getDoctor().getLastName()
+                ? appointment.getDoctor().getUser().getFullName()
                 : null;
 
         return new AppointmentResponse(
@@ -256,7 +201,7 @@ public class Mapper {
             SystemUser user,
             SystemUserUpdateRequest request,
             SystemUSerRepository userRepository,
-            PasswordUtil passwordUtil
+            PasswordEncoder passwordEncoder
     ) {
         // username
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
@@ -268,27 +213,22 @@ public class Mapper {
             user.setUsername(request.getUsername());
         }
 
-        // full name
         if (request.getFullName() != null && !request.getFullName().isBlank()) {
             user.setFullName(request.getFullName());
         }
 
-        // password update with old password verification
         if (request.getNewPassword() != null && !request.getNewPassword().isBlank()) {
 
             if (request.getOldPassword() == null || request.getOldPassword().isBlank()) {
                 throw new IllegalArgumentException("Old password is required to set a new password");
             }
 
-            // Verify old password
-            if (!passwordUtil.checkPassword(request.getOldPassword(), user.getPassword())) {
+
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
                 throw new IllegalArgumentException("Old password is incorrect");
             }
-
-            // Hash and set new password
-            user.setPassword(passwordUtil.hashPassword(request.getNewPassword()));
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }
-
         // role
         if (request.getRole() != null) {
             user.setRole(Role.valueOf(request.getRole().toString().toUpperCase()));

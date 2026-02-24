@@ -34,6 +34,9 @@ public class SystemUser {
     @Column(nullable = false)
     private Role role;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

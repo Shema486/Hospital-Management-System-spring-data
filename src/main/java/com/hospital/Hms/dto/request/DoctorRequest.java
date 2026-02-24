@@ -14,15 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DoctorRequest {
 
-    @NotBlank(message = "FirstName is required")
-    private String firstName;
 
-    @NotBlank(message = "lastName is required")
-    private String lastName;
-
-    @NotBlank(message = "email is required")
-    @Email(message = "please enter valid email")
-    private String email;
+    @NotNull(message = "userId is required")
+    private Long userId;
 
     @NotBlank(message = "phone number is required")
     @Pattern(regexp = "^[0-9+]{10,15}$", message = "phone number must be valid")

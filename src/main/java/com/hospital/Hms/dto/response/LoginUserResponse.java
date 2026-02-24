@@ -14,4 +14,7 @@ public class LoginUserResponse {
     private String fullName;
     private Role role;
     private LocalDateTime createdAt;
+    private String token;
+
+
 }
