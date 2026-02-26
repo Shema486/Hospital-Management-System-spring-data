@@ -73,10 +73,10 @@ public class AppointmentController {
     @Operation(summary = "Delete an appointment", description = "Deletes an appointment by its ID")
     @ApiResponse(responseCode = "204", description = "Appointment deleted successfully")
     @ApiResponse(responseCode = "404", description = "Appointment not found")
-    public ResponseEntity<Void> deleteAppointment(
+    public ResponseEntity<String> deleteAppointment(
             @PathVariable("id") Long appointmentId) {
         appointmentService.deleteAppointment(appointmentId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Appointment deleted successfully with ID: " + appointmentId);
     }
 }
 
