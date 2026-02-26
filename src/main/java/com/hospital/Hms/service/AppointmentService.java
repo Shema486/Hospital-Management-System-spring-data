@@ -14,6 +14,8 @@ import com.hospital.Hms.repository.AppointmentRepository;
 import com.hospital.Hms.repository.DoctorRepository;
 import com.hospital.Hms.repository.PatientRepository;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.concurrent.RejectedExecutionException;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
@@ -59,11 +62,21 @@ public class AppointmentService {
         Appointment appointment = Mapper.mapToAppointment(request, doctor, patient);
         Appointment saved = appointmentRepository.save(appointment);
 
-        notificationService.sendAppointmentNotification(
-                saved.getAppointmentId(),
-                patient.getFirstName() + " " + patient.getLastName(),
-                doctor.getUser().getFullName()
-        );
+        try {
+            notificationService.sendAppointmentNotification(
+                    saved.getAppointmentId(),
+                    patient.getFirstName() + " " + patient.getLastName(),
+                    doctor.getUser().getFullName()
+            ).exceptionally(ex -> {
+                log.error("Failed to send appointment notification for appointmentId={}", saved.getAppointmentId(), ex);
+                return null;
+            });
+
+        } catch (RejectedExecutionException rej) {
+            log.error("Notification executor saturated - appointment notification rejected for appointmentId={}", saved.getAppointmentId(), rej);
+        } catch (Exception ex) {
+            log.error("Unexpected error while submitting appointment notification for appointmentId={}", saved.getAppointmentId(), ex);
+        }
         return Mapper.mapToResponseAppointment(saved);
     }
 
