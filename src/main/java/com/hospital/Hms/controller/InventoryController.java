@@ -77,10 +77,10 @@ public class InventoryController {
     @Operation(summary = "Delete inventory item", description = "Deletes a medical inventory record by its ID")
     @ApiResponse(responseCode = "204", description = "Inventory item deleted successfully")
     @ApiResponse(responseCode = "404", description = "Inventory item not found", content = @Content)
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable Long id) {
 
         service.deleteInventory(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Inventory item deleted successfully with ID: " + id);
     }
 
 }
