@@ -1,5 +1,6 @@
 package com.hospital.Hms.service;
 
+import com.hospital.Hms.async.NotificationService;
 import com.hospital.Hms.dto.request.AppointmentRequest;
 import com.hospital.Hms.dto.response.AppointmentResponse;
 import com.hospital.Hms.entity.Appointment;
@@ -13,6 +14,8 @@ import com.hospital.Hms.repository.AppointmentRepository;
 import com.hospital.Hms.repository.DoctorRepository;
 import com.hospital.Hms.repository.PatientRepository;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.concurrent.RejectedExecutionException;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -23,18 +26,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
+    private final NotificationService notificationService;
     private final PatientRepository patientRepository;
     private final static String APPOINTMENT_NAME_CACHE="appointments";
 
     public AppointmentService(AppointmentRepository appointmentRepository,
-                              DoctorRepository doctorRepository,
+                              DoctorRepository doctorRepository, NotificationService notificationService,
                               PatientRepository patientRepository) {
         this.appointmentRepository = appointmentRepository;
         this.doctorRepository = doctorRepository;
+        this.notificationService = notificationService;
         this.patientRepository = patientRepository;
     }
 
@@ -42,10 +48,10 @@ public class AppointmentService {
     @CachePut(value = APPOINTMENT_NAME_CACHE,key = "#result.appointmentId")
     public AppointmentResponse addAppointment(AppointmentRequest request) {
 
-        Doctor doctor = doctorRepository.findById(request.getDoctorId())
+        Doctor doctor = doctorRepository.findByDoctorIdAndIsActiveTrue(request.getDoctorId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-        Patient patient = patientRepository.findById(request.getPatientId())
+        Patient patient = patientRepository.findByPatientIdAndIsActiveTrue(request.getPatientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
 
         if (appointmentRepository.existsByDoctorAndAppointmentDate(
@@ -55,13 +61,29 @@ public class AppointmentService {
 
         Appointment appointment = Mapper.mapToAppointment(request, doctor, patient);
         Appointment saved = appointmentRepository.save(appointment);
+
+        try {
+            notificationService.sendAppointmentNotification(
+                    saved.getAppointmentId(),
+                    patient.getFirstName() + " " + patient.getLastName(),
+                    doctor.getUser().getFullName()
+            ).exceptionally(ex -> {
+                log.error("Failed to send appointment notification for appointmentId={}", saved.getAppointmentId(), ex);
+                return null;
+            });
+
+        } catch (RejectedExecutionException rej) {
+            log.error("Notification executor saturated - appointment notification rejected for appointmentId={}", saved.getAppointmentId(), rej);
+        } catch (Exception ex) {
+            log.error("Unexpected error while submitting appointment notification for appointmentId={}", saved.getAppointmentId(), ex);
+        }
         return Mapper.mapToResponseAppointment(saved);
     }
 
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
-        return appointmentRepository.findAll()
+        return appointmentRepository.findAllWithPatientAndDoctor()
                 .stream()
                 .map(Mapper::mapToResponseAppointment)
                 .collect(Collectors.toList());

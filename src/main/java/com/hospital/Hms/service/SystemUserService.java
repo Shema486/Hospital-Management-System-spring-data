@@ -95,9 +95,9 @@ public class SystemUserService {
     public Page<SystemUserResponse>findAllUser(String search,Pageable pageable){
         Page<SystemUser> page;
         if (search ==null || search.isBlank()){
-            page = uSerRepository.findAll(pageable);
+            page = uSerRepository.findByIsActiveTrue(pageable);
         }else {
-            page = uSerRepository.findAllByUsername(search,pageable);
+            page = uSerRepository.searchActiveUsers(search,pageable);
         }
         return page.map(Mapper::mapToResponseUser);
 
@@ -106,7 +106,7 @@ public class SystemUserService {
     @Transactional(readOnly = true)
     @Cacheable(value = SYSTEM_USER, key = "#userId")
     public SystemUserResponse findByUserId(Long userId) {
-        SystemUser user = uSerRepository.findById(userId)
+        SystemUser user = uSerRepository.findByUserIdAndIsActiveTrue(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return Mapper.mapToResponseUser(user);
     }

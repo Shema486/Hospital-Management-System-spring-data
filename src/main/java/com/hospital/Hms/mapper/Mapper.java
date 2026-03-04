@@ -58,7 +58,7 @@ public class Mapper {
         SystemUser user = new SystemUser();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
-        user.setEmail(user.getEmail());
+        user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setIsActive(true);
@@ -190,7 +190,7 @@ public class Mapper {
             Patient patient
     ) {
         Appointment appointment = new Appointment();
-        appointment.setAppointmentDate(request.getAppointmentDate());
+        appointment.setAppointmentDate(LocalDateTime.now());
         appointment.setReason(request.getReason());
         appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointment.setDoctor(doctor);

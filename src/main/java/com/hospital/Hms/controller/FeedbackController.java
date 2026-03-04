@@ -65,10 +65,10 @@ public class FeedbackController {
     @Operation(summary = "Delete feedback", description = "Deletes patient feedback by its ID")
     @ApiResponse(responseCode = "204", description = "Feedback deleted successfully")
     @ApiResponse(responseCode = "400", description = "Feedback not found", content = @Content)
-    public ResponseEntity<Void> deleteFeedback(
+    public ResponseEntity<String> deleteFeedback(
             @PathVariable Long id) {
         feedbackServices.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Feedback deleted successfully with ID: " + id);
     }
 }
 

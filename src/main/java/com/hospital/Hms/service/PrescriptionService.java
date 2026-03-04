@@ -1,5 +1,6 @@
 package com.hospital.Hms.service;
 
+import com.hospital.Hms.async.NotificationService;
 import com.hospital.Hms.dto.request.PrescriptionRequestDTO;
 import com.hospital.Hms.dto.response.PrescriptionResponseDTO;
 import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
@@ -15,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.util.concurrent.RejectedExecutionException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -23,23 +27,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
+    private final NotificationService notificationService;
     private static final String PRESCRIPTION_BY_ID = "prescriptionById";
     private static final String PRESCRIPTION_BY_APPOINTMENT = "prescriptionByAppointment";
     private static final String ALL_PRESCRIPTIONS = "allPrescriptions";
 
     @Autowired
-    public PrescriptionService(PrescriptionRepository prescriptionRepository, AppointmentRepository appointmentRepository) {
+    public PrescriptionService(PrescriptionRepository prescriptionRepository, AppointmentRepository appointmentRepository, NotificationService notificationService) {
         this.prescriptionRepository = prescriptionRepository;
         this.appointmentRepository = appointmentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = PRESCRIPTION_BY_ID,key = "#id")
     public PrescriptionResponseDTO getPrescriptionById(Long id) {
-        Prescription prescription = prescriptionRepository.findById(id)
+        Prescription prescription = prescriptionRepository.findByPrescriptionId(id)
                 .orElseThrow(() -> new NotFoundException("Prescription not found"));
         return Mapper.mapToPrescriptionResponse(prescription);
     }
@@ -53,8 +60,8 @@ public class PrescriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PrescriptionResponseDTO> getAllPrescriptions() {
-        return prescriptionRepository.findAll().stream()
+    public List<PrescriptionResponseDTO> getAllPrescriptions(Pageable pageable) {
+        return prescriptionRepository.findAllBy(pageable).stream()
                 .map(Mapper::mapToPrescriptionResponse)
                 .collect(Collectors.toList());
     }
@@ -73,6 +80,20 @@ public class PrescriptionService {
         prescription.setDateIssued(LocalDateTime.now());
 
         Prescription saved = prescriptionRepository.save(prescription);
+
+        try {
+            notificationService.sendPrescriptionIssuedNotification(
+                    saved.getPrescriptionId(),
+                    appointment.getAppointmentId()
+            ).exceptionally(ex -> {
+                log.error("Failed to send prescription notification for prescriptionId={}", saved.getPrescriptionId(), ex);
+                return null;
+            });
+        } catch (RejectedExecutionException rej) {
+            log.error("Notification executor saturated - prescription notification rejected for prescriptionId={}", saved.getPrescriptionId(), rej);
+        } catch (Exception ex) {
+            log.error("Unexpected error while submitting prescription notification for prescriptionId={}", saved.getPrescriptionId(), ex);
+        }
 
         return Mapper.mapToPrescriptionResponse(saved);
     }
