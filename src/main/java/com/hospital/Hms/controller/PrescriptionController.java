@@ -5,12 +5,14 @@ import com.hospital.Hms.dto.response.PrescriptionResponseDTO;
 import com.hospital.Hms.dto.response.PrescriptionWithAppointment;
 import com.hospital.Hms.service.PrescriptionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -78,9 +80,12 @@ public class PrescriptionController {
     @PreAuthorize("hasAnyRole('DOCTOR','ADMIN')")
     @Operation(summary = "Get all prescriptions", description = "Retrieves all prescriptions in the system")
     @ApiResponse(responseCode = "200", description = "Prescriptions retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PrescriptionResponseDTO.class)))
-    public ResponseEntity<List<PrescriptionResponseDTO>> getAll() {
+    public ResponseEntity<List<PrescriptionResponseDTO>> getAll(
+            @RequestParam(required = false,defaultValue = "0") int page,
+            @RequestParam(required = false,defaultValue = "5") int size
+    ) {
         return ResponseEntity.ok(
-                prescriptionService.getAllPrescriptions()
+                prescriptionService.getAllPrescriptions(PageRequest.of(page, size))
         );
     }
 

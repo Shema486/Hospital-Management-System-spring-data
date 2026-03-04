@@ -45,7 +45,7 @@ public class DepartmentService  {
     @Cacheable(value = DEPARTMENT_WITH_DOCTOR_CACHE,key = "#deptId")
     public DepartmentWithDoctor getDepartmentWithDoctors(Long deptId) {
 
-        Department department = departmentRepository.findById(deptId)
+        Department department = departmentRepository.findByDeptId(deptId)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
 
         List<String> doctorNames = department.getDoctors()

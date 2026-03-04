@@ -64,9 +64,9 @@ public class PatientService {
     public Page<PatientResponse> findAllPatient(String name, Pageable pageable) {
         Page<Patient> page;
         if (name == null || name.isBlank()) {
-            page = patientRepository.findAll(pageable);
+            page = patientRepository.findByIsActiveTrue(pageable);
         } else {
-            page = patientRepository.findByNameContainingIgnoreCase(name, pageable);
+            page = patientRepository.searchActivePatients(name, pageable);
         }
 
         return page.map(Mapper::mapToResponsePatient);
@@ -75,7 +75,7 @@ public class PatientService {
     @Transactional(readOnly = true)
     @Cacheable(value =PATIENT_FEEDBACK_CACHE ,key = "#patientId")
     public PatientWithFeedback getPatientWithFeedback(Long patientId){
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientRepository.findWithFeedbacksByPatientIdAndIsActiveTrue(patientId)
                 .orElseThrow(()->new NotFoundException("Patient with this Id not found"));
 
         List<FeedbackResponse> feedback = patient.getFeedbacks()
@@ -99,7 +99,7 @@ public class PatientService {
     @Cacheable(value = PATIENT_APPOINTMENT_CACHE,key = "#patientId")
     public PatientWithAppointment getPatientWithAppointment(Long patientId){
 
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientRepository.findWithAppointmentsByPatientIdAndIsActiveTrue(patientId)
                 .orElseThrow(()->new NotFoundException("Patient with this Id not found"));
 
         List<AppointmentSummaryDTO> appointment = patient.getAppointments()
@@ -123,7 +123,7 @@ public class PatientService {
     @Transactional(readOnly = true)
     @Cacheable(value = PATIENT_NAME_CACHE,key = "#id")
     public PatientResponse getById(Long id) {
-        Patient patient = patientRepository.findById(id)
+        Patient patient = patientRepository.findWithFeedbacksByPatientIdAndIsActiveTrue(id)
                 .orElseThrow(()->new NotFoundException("patient not found"));
         return Mapper.mapToResponsePatient(patient);
     }
