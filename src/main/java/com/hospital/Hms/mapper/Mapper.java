@@ -190,7 +190,7 @@ public class Mapper {
             Patient patient
     ) {
         Appointment appointment = new Appointment();
-        appointment.setAppointmentDate(request.getAppointmentDate());
+        appointment.setAppointmentDate(LocalDateTime.now());
         appointment.setReason(request.getReason());
         appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointment.setDoctor(doctor);

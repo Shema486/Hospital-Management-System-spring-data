@@ -16,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.util.concurrent.RejectedExecutionException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final AppointmentRepository appointmentRepository;
@@ -56,8 +60,8 @@ public class PrescriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<PrescriptionResponseDTO> getAllPrescriptions() {
-        return prescriptionRepository.findAllBy().stream()
+    public List<PrescriptionResponseDTO> getAllPrescriptions(Pageable pageable) {
+        return prescriptionRepository.findAllBy(pageable).stream()
                 .map(Mapper::mapToPrescriptionResponse)
                 .collect(Collectors.toList());
     }
@@ -77,10 +81,19 @@ public class PrescriptionService {
 
         Prescription saved = prescriptionRepository.save(prescription);
 
-        notificationService.sendPrescriptionIssuedNotification(
-                saved.getPrescriptionId(),
-                appointment.getAppointmentId()
-        );
+        try {
+            notificationService.sendPrescriptionIssuedNotification(
+                    saved.getPrescriptionId(),
+                    appointment.getAppointmentId()
+            ).exceptionally(ex -> {
+                log.error("Failed to send prescription notification for prescriptionId={}", saved.getPrescriptionId(), ex);
+                return null;
+            });
+        } catch (RejectedExecutionException rej) {
+            log.error("Notification executor saturated - prescription notification rejected for prescriptionId={}", saved.getPrescriptionId(), rej);
+        } catch (Exception ex) {
+            log.error("Unexpected error while submitting prescription notification for prescriptionId={}", saved.getPrescriptionId(), ex);
+        }
 
         return Mapper.mapToPrescriptionResponse(saved);
     }
